@@ -48,9 +48,13 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          projects="$(pnpm exec wrangler pages project list)"
-          if ! printf '%s\n' "$projects" | grep -Eq "(^|[[:space:]])${CLOUDFLARE_PAGES_PROJECT}([[:space:]]|$)"; then
-            pnpm exec wrangler pages project create "$CLOUDFLARE_PAGES_PROJECT"
+          set +e
+          create_output="$(pnpm exec wrangler pages project create "$CLOUDFLARE_PAGES_PROJECT" --production-branch master 2>&1)"
+          create_status=$?
+          set -e
+          printf '%s\n' "$create_output"
+          if [ "$create_status" -ne 0 ] && ! printf '%s\n' "$create_output" | grep -qiE "already exists|project already exists"; then
+            exit "$create_status"
           fi
 
       - name: Deploy to Pages
