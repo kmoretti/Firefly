@@ -149,6 +149,7 @@ export default defineConfig({
 			},
 		}),
 		icon({
+			iconDir: "src/assets",
 			include: {
 				"material-symbols": ["*"],
 				"fa7-brands": ["*"],

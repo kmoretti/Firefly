@@ -4,6 +4,12 @@ on:
   push:
     branches: [ master ]
   workflow_dispatch:
+  # 上游 kmoretti/butterfly-link-check 更新 link.yml 后触发本项目重建
+  repository_dispatch:
+    types: [ link-check-updated ]
+  # 每日定时重建，兜底刷新远程友链数据（数据在构建时从 CDN 拉取）
+  schedule:
+    - cron: '0 3 * * *'
 
 # Pages 部署需要的权限
 permissions:

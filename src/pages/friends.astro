@@ -2,12 +2,16 @@
 import { getEntry, render } from "astro:content";
 import Comment from "@components/comment/index.astro";
 import Markdown from "@components/common/Markdown.astro";
+import RemoteFriends from "@components/pages/RemoteFriends.svelte";
+import TombstoneFriends from "@components/pages/TombstoneFriends.svelte";
 import { Icon } from "astro-icon/components";
 import {
 	commentConfig,
 	friendsPageConfig,
 	getEnabledFriends,
+	remoteFriendsConfig,
 	siteConfig,
+	tombstoneConfig,
 } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
@@ -33,8 +37,31 @@ const isCommentEnabled =
 	friendsPageConfig.showComment !== false;
 
 // 使用配置文件中的友链数据，按权重排序
-const items = getEnabledFriends();
-const allTags = [...new Set(items.flatMap((item) => item.tags || []))].sort();
+const showAllFriends = friendsPageConfig.showAllFriends !== false;
+const showLocalFriends =
+	showAllFriends && friendsPageConfig.showLocalFriends !== false;
+const showRemoteFriends = showAllFriends && remoteFriendsConfig.enable;
+const showTombstone = showAllFriends && tombstoneConfig.enable;
+const items = showLocalFriends ? getEnabledFriends() : [];
+
+const normalizeTag = (tag: string): string => tag.trim().toLowerCase();
+
+const allTags = [
+	...new Set(
+		items
+			.flatMap((item) => (item.tags || []).map(normalizeTag))
+			.filter(Boolean),
+	),
+].sort();
+const groupedItems = items.reduce<Record<string, typeof items>>(
+	(groups, item) => {
+		const group = item.group || "其他";
+		if (!groups[group]) groups[group] = [];
+		groups[group].push(item);
+		return groups;
+	},
+	{},
+);
 
 // 页面标题和描述
 const title = friendsPageConfig.title || i18n(I18nKey.friends);
@@ -70,8 +97,8 @@ const description =
 
       <!-- 搜索框 -->
       {
-        items.length > 0 && (
-          <friend-filter class="mb-6">
+        (showLocalFriends && items.length > 0 || showRemoteFriends) && (
+          <friend-filter class="mb-6 block">
             <div class="relative mb-3">
               <Icon
                 name="material-symbols:search"
@@ -84,7 +111,7 @@ const description =
                 class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-(--line-divider) bg-transparent text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-(--primary) focus:ring-1 focus:ring-(--primary) outline-none transition-all duration-200 text-sm"
               />
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div data-tags class="flex flex-wrap gap-2">
               <button
                 data-tag="all"
                 class="category-pill px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200"
@@ -105,78 +132,61 @@ const description =
         )
       }
 
-      <div class="friends-grid my-4">
-        {
-          items.length === 0 && (
-            <div class="col-span-full flex flex-col items-center justify-center py-12 text-neutral-400 dark:text-neutral-500">
+      {showRemoteFriends && (
+        <RemoteFriends
+          client:load
+          ymlUrl={remoteFriendsConfig.linkYmlUrl}
+          latencyUrl={remoteFriendsConfig.latencyJsonUrl}
+        />
+      )}
+
+      {showLocalFriends && (
+        <div class="my-6">
+          {items.length === 0 ? (
+            <div class="flex flex-col items-center justify-center py-12 text-neutral-400 dark:text-neutral-500">
               <Icon name="material-symbols:group-off-outline" class="text-4xl mb-3" />
               <div class="text-sm">{i18n(I18nKey.friendsEmpty)}</div>
             </div>
-          )
-        }
-        {
-          items.map((item) => (
-            <a
-              href={item.siteurl}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-tags={item.tags?.join(",")}
-              class="friend-card group flex items-center gap-3 p-2.5 rounded-xl border border-(--line-divider) hover:border-(--primary) hover:bg-(--card-bg) transition-all duration-300 hover:shadow-lg relative overflow-hidden"
-            >
-              {/* 背景装饰 - 仅悬停显示 */}
-              <div class="absolute inset-0 bg-(--primary) opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none" />
-
-              {/* 外部链接图标 - 固定在卡片右上角 */}
-              <Icon
-                name="material-symbols:arrow-outward-rounded"
-                class="absolute top-3 right-3 text-(--primary) text-lg opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
-              />
-
-              {/* 头像 */}
-              <div class="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-black/5 dark:border-white/5 group-hover:scale-105 transition-transform duration-300">
-                <img
-                  src={item.imgurl}
-                  alt={item.title}
-                  class="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* 内容 */}
-              <div class="grow min-w-0 flex flex-col justify-center gap-0.5">
-                <div class="font-bold text-base text-neutral-900 dark:text-neutral-100 group-hover:text-(--primary) transition-colors truncate pr-4">
-                  {item.title}
+          ) : (
+            Object.entries(groupedItems).map(([group, groupItems]) => (
+              <section class="mb-6 last:mb-0">
+                <h2 class="mb-3 text-xl font-bold text-neutral-900 dark:text-neutral-100">{group}</h2>
+                <div class="friends-grid">
+                  {groupItems.map((item) => (
+                    <a href={item.siteurl} target="_blank" rel="noopener noreferrer" data-tags={item.tags?.join(",")} class="friend-card group flex items-center gap-3 p-2.5 rounded-xl border border-(--line-divider) hover:border-(--primary) hover:bg-(--card-bg) transition-all duration-300 hover:shadow-lg relative overflow-hidden">
+                      <div class="absolute inset-0 bg-(--primary) opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none" />
+                      <Icon name="material-symbols:arrow-outward-rounded" class="absolute top-3 right-3 text-(--primary) text-lg opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                      <div class="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-black/5 dark:border-white/5 group-hover:scale-105 transition-transform duration-300">
+                        <img src={item.imgurl} alt={item.title} class="w-full h-full object-cover" />
+                      </div>
+                      <div class="grow min-w-0 flex flex-col justify-center gap-0.5">
+                        <div class="font-bold text-base text-neutral-900 dark:text-neutral-100 group-hover:text-(--primary) transition-colors truncate pr-4">{item.title}</div>
+                        <div class="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-1" title={item.desc}>{item.desc}</div>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                          {item.tags?.slice(0, 3).map((tag) => <span class="text-[0.65rem] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors duration-300">{tag}</span>)}
+                        </div>
+                      </div>
+                    </a>
+                  ))}
                 </div>
-
-                <div
-                  class="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-1"
-                  title={item.desc}
-                >
-                  {item.desc}
-                </div>
-
-                {/* 标签 */}
-                <div class="flex flex-wrap gap-1 mt-1">
-                  {item.tags && item.tags.length > 0
-                    ? item.tags
-                        .slice(0, 3)
-                        .map((tag) => (
-                          <span class="text-[0.65rem] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors duration-300">
-                            {tag}
-                          </span>
-                        ))
-                    : null}
-                </div>
-              </div>
-            </a>
-          ))
-        }
-      </div>
-
-      {/* 搜索无结果提示 */}
+              </section>
+            ))
+          )}
+        </div>
+      )}
+      <!-- 搜索无结果提示 -->
       <div class="friends-empty hidden flex-col items-center justify-center py-12 text-neutral-400 dark:text-neutral-500">
         <Icon name="material-symbols:search-off-rounded" class="text-4xl mb-3" />
         <div class="text-sm">{i18n(I18nKey.searchNoResults)}</div>
       </div>
+
+      {showTombstone && (
+        <TombstoneFriends
+          client:load
+          url={tombstoneConfig.url}
+          title={tombstoneConfig.title}
+        />
+      )}
     </div>
   </div>
 
@@ -208,13 +218,47 @@ const description =
           this.addEventListener("click", this.handleClick);
           const input = this.querySelector("[data-search]");
           if (input) {
-            input.addEventListener("input", () => this.applyFilters());
+            input.addEventListener("input", () => {
+              this.applyFilters();
+              window.dispatchEvent(
+                new CustomEvent("friends-filter-change", {
+                  detail: { query: input.value, selectedTag: this.selectedTag, source: "local" },
+                }),
+              );
+            });
           }
+          window.addEventListener("friends-tags", this.handleRemoteTags);
+          window.addEventListener("friends-filter-change", this.handleFilterChange);
         }
 
         disconnectedCallback() {
           this.removeEventListener("click", this.handleClick);
+          window.removeEventListener("friends-tags", this.handleRemoteTags);
+          window.removeEventListener("friends-filter-change", this.handleFilterChange);
         }
+
+        handleRemoteTags = (event) => {
+          const tags = (event.detail?.tags || [])
+            .map((tag) => tag.trim().toLowerCase())
+            .filter(Boolean);
+          const container = this.querySelector("[data-tags]");
+          if (!container) return;
+          tags.forEach((tag) => {
+            if ([...container.querySelectorAll("button")].some((button) => button.dataset.tag === tag)) return;
+            const button = document.createElement("button");
+            button.dataset.tag = tag;
+            button.className = "category-pill px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200";
+            button.textContent = tag;
+            container.append(button);
+          });
+        };
+
+        handleFilterChange = (event) => {
+          if (event.detail?.source === "local") return;
+          this.applyingExternalFilter = true;
+          this.applyFilters(event.detail);
+          this.applyingExternalFilter = false;
+        };
 
         handleClick(e) {
           const target = e.target;
@@ -230,27 +274,33 @@ const description =
           button.setAttribute("data-active", "");
 
           this.applyFilters();
+          window.dispatchEvent(
+            new CustomEvent("friends-filter-change", {
+              detail: { query: this.querySelector("[data-search]")?.value || "", selectedTag: this.selectedTag, source: "local" },
+            }),
+          );
         }
 
-        applyFilters() {
+        applyFilters(filters = {}) {
           const container = this.closest(".card-base");
           if (!container) return;
 
           const input = this.querySelector("[data-search]");
-          const query = (input?.value || "").toLowerCase().trim();
+          const query = (filters.query ?? input?.value ?? "").toLowerCase().trim();
+          const selectedTag = normalizeTag(filters.selectedTag ?? this.selectedTag);
           const cards = container.querySelectorAll(".friend-card");
 
           let hasVisible = false;
 
           cards.forEach((card) => {
             const cardEl = card;
-            const tags = (cardEl.dataset.tags || "").split(",");
+            const tags = (cardEl.dataset.tags || "").split(",").map((tag) => tag.trim().toLowerCase()).filter(Boolean);
             const name = (cardEl.querySelector(".font-bold")?.textContent || "").toLowerCase();
             const desc = (cardEl.querySelector(".line-clamp-1")?.textContent || "").toLowerCase();
 
             const tagMatch =
-              this.selectedTag === "all" ||
-              (this.selectedTag && tags.includes(this.selectedTag));
+              selectedTag === "all" ||
+              (selectedTag && tags.includes(selectedTag));
             const searchMatch =
               !query ||
               name.includes(query) ||

@@ -15,16 +15,7 @@ export const site = {
   email: "xiaye@msn.com",
 };
 
-{/* ========= 注意事项 ========== */}
-
-export const notes = [
-  { title: "互换原则", content: "请先将本站添加到您的友链页面，确认后会添加您的友链" },
-  { title: "链接维护", content: "友链网站长期无法访问或内容违规，将会被移除" },
-  { title: "内容要求", content: "内容积极向上，不含有任何含色情/反动/暴力等违法违规内容" },
-  { title: "站点要求", content: "支持 HTTPS，以原创内容为主，能够正常访问且有持续更新" },
-];
-
-{/* ============================= */}
+import FriendlinkSubmission from "@components/pages/FriendlinkSubmission.svelte";
 
 <div class="not-prose my-4">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -132,21 +123,5 @@ export const notes = [
     </div>
   </div>
 
-  {/* 底部：注意事项 */}
-  <div class="mt-4 rounded-2xl border border-(--line-divider) overflow-hidden">
-    <div class="p-5 sm:p-6">
-      <h3 class="text-base font-bold mb-4 flex items-center gap-2">
-        <svg class="w-4.5 h-4.5 text-(--primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        注意事项
-      </h3>
-      <div class="space-y-3 text-sm text-neutral-600 dark:text-neutral-400">
-        {notes.map((item) => (
-          <div class="flex items-baseline gap-2.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-(--primary) shrink-0 translate-y-[-2px]"></span>
-            <p><strong class="text-neutral-800 dark:text-neutral-200">{item.title}</strong>：{item.content}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
+  <FriendlinkSubmission client:load />
 </div>

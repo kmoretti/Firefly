@@ -55,7 +55,12 @@ export { sakuraConfig } from "./effectsConfig"; // 动画特效配置（樱花�
 export { expressiveCodeConfig } from "./expressiveCodeConfig"; // 代码高亮配置
 export { fontConfig, fontsList } from "./fontConfig"; // 字体配置
 export { footerConfig } from "./footerConfig"; // 页脚配置
-export { friendsPageConfig, getEnabledFriends } from "./friendsConfig"; // 友链配置
+export {
+	friendsPageConfig,
+	getEnabledFriends,
+	remoteFriendsConfig,
+	tombstoneConfig,
+} from "./friendsConfig"; // 友链配置
 export { galleryConfig } from "./galleryConfig"; // 相册配置
 export { licenseConfig } from "./licenseConfig"; // 许可证配置
 // 组件配置

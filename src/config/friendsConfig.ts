@@ -1,8 +1,30 @@
-import type { FriendLink, FriendsPageConfig } from "../types/friendsConfig";
+import type {
+	FriendLink,
+	FriendsPageConfig,
+	RemoteFriendsConfig,
+	TombstoneConfig,
+} from "../types/friendsConfig";
 
 // 可以在src/content/spec/friends.md中编写友链页面下方的自定义内容
 
 // 友链页面配置
+export const remoteFriendsConfig: RemoteFriendsConfig = {
+	enable: true,
+	linkYmlUrl:
+		"https://jsd.268682.xyz/gh/kmoretti/butterfly-link-check@main/link.yml",
+	latencyJsonUrl: "https://fc.081531.xyz/link.json",
+};
+
+// 友链墓碑配置
+export const tombstoneConfig: TombstoneConfig = {
+	// 是否启用友链墓碑
+	enable: true,
+	// 墓碑数据源（友链检测失败/失效的站点列表）
+	url: "https://jsd.268682.xyz/gh/kmoretti/butterfly-link-check@main/link-false.yml",
+	// 墓碑标题
+	title: "🪵 友链墓碑 · 相逢何必曾相识",
+};
+
 export const friendsPageConfig: FriendsPageConfig = {
 	// 页面标题，如果留空则使用 i18n 中的翻译
 	title: "",
@@ -12,6 +34,11 @@ export const friendsPageConfig: FriendsPageConfig = {
 
 	// 是否显示底部自定义内容（friends.mdx 中的内容）
 	showCustomContent: true,
+
+	showAllFriends: true,
+
+	// 是否显示本地配置的友链
+	showLocalFriends: true,
 
 	// 是否显示评论区，需要先在commentConfig.ts启用评论系统
 	showComment: true,
@@ -29,6 +56,7 @@ export const friendsConfig: FriendLink[] = [
 		desc: "飞萤之火自无梦的长夜亮起，绽放在终竟的明天。",
 		siteurl: "https://blog.cuteleaf.cn",
 		tags: ["Blog"],
+		group: "个人博客",
 		weight: 10, // 权重，数字越大排序越靠前
 		enabled: true, // 是否启用
 	},
@@ -38,6 +66,7 @@ export const friendsConfig: FriendLink[] = [
 		desc: "Firefly主题模板文档",
 		siteurl: "https://docs-firefly.cuteleaf.cn",
 		tags: ["Docs"],
+		group: "文档与资源",
 		weight: 9,
 		enabled: true,
 	},
@@ -47,6 +76,7 @@ export const friendsConfig: FriendLink[] = [
 		desc: "The web framework for content-driven websites. ⭐️ Star to support our work!",
 		siteurl: "https://github.com/withastro/astro",
 		tags: ["Framework"],
+		group: "技术项目",
 		weight: 8,
 		enabled: true,
 	},
