@@ -1,0 +1,128 @@
+media:
+  input: public
+  output: /
+  categories: [image, video]
+  rename: safe
+
+content:
+  - name: posts
+    label: 文章
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    filename:
+      template: "{primary}.md"
+      field: true
+    view:
+      fields: [title, published, draft, pinned]
+      primary: title
+      sort: [published, title]
+      search: [title, description, tags, category]
+      default:
+        sort: published
+        order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: published
+        label: 发布日期
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: updated
+        label: 更新日期
+        type: date
+        options:
+          format: yyyy-MM-dd
+      - name: draft
+        label: 草稿
+        type: boolean
+        default: false
+      - name: description
+        label: 描述
+        type: text
+      - name: image
+        label: 封面图
+        type: image
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+      - name: category
+        label: 分类
+        type: string
+      - name: lang
+        label: 语言
+        type: string
+      - name: pinned
+        label: 置顶
+        type: boolean
+        default: false
+      - name: author
+        label: 作者
+        type: string
+      - name: sourceLink
+        label: 原文链接
+        type: string
+      - name: licenseName
+        label: 许可证名称
+        type: string
+      - name: licenseUrl
+        label: 许可证链接
+        type: string
+      - name: comment
+        label: 允许评论
+        type: boolean
+        default: true
+      - name: password
+        label: 访问密码
+        type: string
+      - name: passwordHint
+        label: 密码提示
+        type: string
+      - name: series
+        label: 系列
+        type: string
+      - name: seriesOrder
+        label: 系列顺序
+        type: number
+      - name: body
+        label: 正文
+        type: rich-text
+
+  - name: dynamic
+    label: 动态
+    type: collection
+    path: src/content/dynamic
+    format: yaml-frontmatter
+    filename:
+      template: "{primary}.md"
+      field: true
+    view:
+      fields: [published, pinned, location]
+      primary: published
+      sort: [published]
+      search: [location]
+      default:
+        sort: published
+        order: desc
+    fields:
+      - name: published
+        label: 发布时间
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd HH:mm:ss
+      - name: pinned
+        label: 置顶
+        type: boolean
+        default: false
+      - name: location
+        label: 位置
+        type: string
+      - name: body
+        label: 正文
+        type: rich-text
