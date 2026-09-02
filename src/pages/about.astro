@@ -1,9 +1,9 @@
 ---
-
 import { getEntry, render } from "astro:content";
+import ImageWrapper from "@components/common/ImageWrapper.astro";
 import Markdown from "@components/common/Markdown.astro";
-import { profileConfig } from "@/config/profileConfig";
-import { siteConfig } from "@/config/siteConfig";
+import { Icon } from "astro-icon/components";
+import { aboutConfig, profileConfig, siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
@@ -11,13 +11,7 @@ import { getAuthorAvatarUrl } from "@/utils/schema-image";
 import { buildProfilePage } from "@/utils/schema-utils";
 
 const aboutPost = await getEntry("spec", "about");
-
-if (!aboutPost) {
-	throw new Error("About page content not found");
-}
-
-const { Content } = await render(aboutPost);
-
+const { Content } = aboutPost ? await render(aboutPost) : { Content: null };
 const avatarUrl = await getAuthorAvatarUrl();
 const jsonLd = buildProfilePage({
 	site: siteConfig.site_url,
@@ -28,12 +22,72 @@ const jsonLd = buildProfilePage({
 });
 ---
 <MainGridLayout title={i18n(I18nKey.about)} description={i18n(I18nKey.about)}>
-    <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-    <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full ">
-            <Markdown class="mt-2">
-                <Content />
-            </Markdown>
-        </div>
-    </div>
+	<script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+	{aboutConfig.enable && <div class="mx-auto flex w-full max-w-4xl flex-col gap-4 sm:gap-6">
+		{aboutConfig.modules.profile && <section class="card-base flex flex-col items-center gap-4 p-6 text-center sm:p-8">
+			<div class="flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
+				{aboutConfig.authorTags.left.length > 0 && <div class="flex flex-col items-center gap-2 sm:items-end">
+					{aboutConfig.authorTags.left.map((tag) => <span class="about-tag">{tag}</span>)}
+				</div>}
+				<ImageWrapper src={profileConfig.avatar || ""} alt={profileConfig.name} class="h-24 w-24 overflow-hidden rounded-full sm:h-32 sm:w-32" loading="eager" fetchpriority="high" widths={[192]} sizes="(min-width: 640px) 128px, 96px" />
+				{aboutConfig.authorTags.right.length > 0 && <div class="flex flex-col items-center gap-2 sm:items-start">
+					{aboutConfig.authorTags.right.map((tag) => <span class="about-tag">{tag}</span>)}
+				</div>}
+			</div>
+			<h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-100 sm:text-3xl">{profileConfig.name}</h1>
+			{profileConfig.bio && <p class="max-w-xl break-words text-neutral-600 dark:text-neutral-400">{profileConfig.bio}</p>}
+			<div class="flex flex-wrap justify-center gap-2">
+				{profileConfig.links.map((item) => <a rel="me" aria-label={item.name} href={item.url} target={item.url.startsWith("mailto:") ? undefined : "_blank"} class="btn-regular inline-flex h-10 items-center gap-2 rounded-lg px-3 active:scale-95"><Icon name={item.icon} class="text-xl" />{item.showName && item.name}</a>)}
+			</div>
+		</section>}
+		{aboutConfig.modules.greeting && aboutConfig.greeting && <section class="overflow-hidden rounded-(--radius-large) bg-gradient-to-br from-(--primary) to-purple-500 p-6 text-white shadow-lg sm:p-8"><p class="break-words text-xl font-bold sm:text-2xl">{aboutConfig.greeting}</p></section>}
+		{aboutConfig.modules.introduction && (aboutConfig.introduction || aboutConfig.motto) && <section class="card-base p-6 sm:p-8"><h2 class="mb-3 text-xl font-bold text-neutral-900 dark:text-neutral-100">关于本站</h2>{aboutConfig.introduction && <p class="break-words leading-7 text-neutral-600 dark:text-neutral-400">{aboutConfig.introduction}</p>}{aboutConfig.motto && <p class="mt-4 border-l-4 border-(--primary) pl-4 font-medium italic text-neutral-700 dark:text-neutral-300">{aboutConfig.motto}</p>}</section>}
+		{aboutConfig.modules.skills && aboutConfig.skills.length > 0 && <section class="card-base p-6 sm:p-8"><h2 class="mb-4 text-xl font-bold text-neutral-900 dark:text-neutral-100">技能与工具</h2><div class="flex flex-wrap gap-2">{aboutConfig.skills.map((skill) => <span class="inline-flex max-w-full items-center gap-2 rounded-full border border-black/10 bg-black/5 px-3 py-2 text-sm text-neutral-700 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200"><Icon name={skill.icon || "fa7-solid:code"} class="shrink-0 text-base" /> <span class="break-words">{skill.name}</span></span>)}</div></section>}
+		{aboutConfig.modules.journey && <section class="card-base p-6 sm:p-8"><h2 class="mb-4 text-xl font-bold text-neutral-900 dark:text-neutral-100">心路历程</h2>{Content ? <Markdown class="mt-2"><Content /></Markdown> : <p class="text-neutral-500 dark:text-neutral-400">暂无内容。</p>}</section>}
+	</div>}
 </MainGridLayout>
+
+<style>
+	.about-tag {
+		padding: 1px 10px;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		line-height: 1.75;
+		font-weight: 700;
+		white-space: nowrap;
+		color: var(--btn-content);
+		background: var(--btn-regular-bg);
+		border: 1px solid var(--line-divider);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+		animation: about-tag-float 6s ease-in-out infinite;
+		will-change: transform, opacity;
+	}
+	.about-tag:nth-child(1) {
+		animation-delay: 0s;
+	}
+	.about-tag:nth-child(2) {
+		animation-delay: 0.6s;
+	}
+	.about-tag:nth-child(3) {
+		animation-delay: 1.2s;
+	}
+	.about-tag:nth-child(4) {
+		animation-delay: 1.8s;
+	}
+	@keyframes about-tag-float {
+		0%,
+		100% {
+			transform: translateY(-2px) scale(1);
+			opacity: 1;
+		}
+		50% {
+			transform: translateY(-9px) scale(1.05);
+			opacity: 0.9;
+		}
+	}
+	@media (max-width: 639px) {
+		.about-tag {
+			animation-duration: 4s;
+		}
+	}
+</style>

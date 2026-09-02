@@ -17,6 +17,7 @@ export function resolveNavbarMode(navbar: {
 export const navbarMode: NavbarMode = resolveNavbarMode(siteConfig.navbar);
 
 // 类型导出
+export type { AboutPageConfig, SkillItem } from "../types/aboutConfig";
 export type {
 	AdConfig,
 	AnalyticsConfig,
@@ -56,12 +57,13 @@ export type {
 	FontDefinition,
 	FontSelectionConfig,
 } from "../types/fontConfig"; // 字体类型定义
+// 功能配置
+export { aboutConfig } from "./aboutConfig";
 export { analyticsConfig } from "./analyticsConfig"; // 统计分析配置
 export { announcementConfig } from "./announcementConfig"; // 公告配置
 // 样式配置
 export { backgroundWallpaper } from "./backgroundWallpaper"; // 背景壁纸配置
 export { booknavConfig, booknavPageConfig } from "./booknavConfig"; // 书签导航配置
-// 功能配置
 export { commentConfig } from "./commentConfig"; // 评论系统配置
 export { coverImageConfig } from "./coverImageConfig"; // 封面图配置
 export { displaySettingsConfig } from "./displaySettingsConfig"; // 显示设置面板开关配置

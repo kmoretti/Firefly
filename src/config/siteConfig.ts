@@ -40,26 +40,24 @@ const pages = resolvePageToggles({
 
 export const siteConfig: SiteConfig = {
 	// 站点标题
-	title: "Firefly",
+	title: "喵洛阁",
 
 	// 站点副标题
-	subtitle: "Demo site",
+	subtitle: "克喵的博客",
 
 	// 站点 URL
-	site_url: "https://firefly.cuteleaf.cn",
+	site_url: "https://b.kemeow.top",
 
 	// 站点描述
 	description:
-		"Firefly 是一款基于 Astro 框架和 Fuwari 模板开发的清新美观且现代化个人博客主题模板，专为技术爱好者和内容创作者设计。该主题融合了现代 Web 技术栈，提供了丰富的功能模块和高度可定制的界面，让您能够轻松打造出专业且美观的个人博客网站。",
+		"克喵的博客，我在这里记录一些文字，关于日常琐碎、踩坑教程和资源分享。",
 
 	// 站点关键词
 	keywords: [
-		"Firefly",
-		"Fuwari",
+		"克喵Moretti",
+		"keMiao",
 		"Astro",
-		"ACGN",
 		"博客",
-		"技术博客",
 		"静态博客",
 	],
 
@@ -79,9 +77,9 @@ export const siteConfig: SiteConfig = {
 	// 网站Card样式配置
 	card: {
 		// 是否开启卡片边框和阴影，开启后让网站更有立体感
-		border: false,
+		border: true,
 		// 是否让卡片风格跟随主题色相
-		followTheme: false,
+		followTheme: true,
 	},
 
 	// Favicon 配置
@@ -110,12 +108,12 @@ export const siteConfig: SiteConfig = {
 		// 使用 Astro 图标库时不需要设置 valueDark，图标会自动跟随主题亮暗色切换
 		logo: {
 			type: "image",
-			value: "assets/images/logo/firefly-light.png",
-			valueDark: "assets/images/logo/firefly-dark.png",
+			value: "assets/images/logo/logo.png",
+			valueDark: "assets/images/logo/logo.png",
 			alt: "🍀",
 		},
 		// 导航栏标题
-		title: "Firefly",
+		title: "喵洛阁",
 		// 全宽导航栏，导航栏是否占满屏幕宽度
 		widthFull: false,
 		// 导航菜单对齐方式，left：左对齐，center：居中
@@ -130,7 +128,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	// 站点开始日期，用于统计运行天数
-	siteStartDate: "2025-01-01",
+	siteStartDate: "2024-11-01",
 
 	// 站点时区（IANA 时区字符串），用于格式化bangumi、rss里的构建日期时间等等..
 	// 示例："Asia/Shanghai", "UTC", 如果为空，则按照构建服务器的时区进行时区转换
@@ -187,9 +185,9 @@ export const siteConfig: SiteConfig = {
 			// 标签数量，设为 0 则不限制
 			tagCount: 3,
 			// 是否显示字数
-			showWords: false,
+			showWords: true,
 			// 是否显示阅读时间
-			showReadingTime: false,
+			showReadingTime: true,
 		},
 		// 底部 PostStats 统计信息显示控制
 		// 如果tagsPosition设置为"bottom"，则stats将不显示
@@ -225,10 +223,10 @@ export const siteConfig: SiteConfig = {
 		// 提醒框（Admonitions）配置，修改后需要重启开发服务器才能生效
 		// 主题：'github' | 'obsidian' | 'vitepress' | 'docusaurus'，每个主题风格和语法不同，可根据喜好选择
 		rehypeCallouts: {
-			theme: "github",
+			theme: "obsidian",
 			// 是否启用兼容 Python-Markdown 风格的 admonition 语法（!!!和???语法）
 			// 注意：只有 theme 配置成 obsidian 主题才能基本支持这些语法，其他主题会有样式问题或不兼容的情况
-			enablePythonMarkdownAdmonitions: false,
+			enablePythonMarkdownAdmonitions: true,
 		},
 		// 文章页底部的"上次编辑时间"卡片开关
 		showLastModified: true,
@@ -249,7 +247,7 @@ export const siteConfig: SiteConfig = {
 	// ── 番组计划bangumi配置 ──────────────────────────────────
 	bangumi: {
 		// Bangumi用户ID
-		userId: "1143164",
+		userId: "kemiao",
 		// 数据模式：static=构建时获取，dynamic=客户端实时获取
 		// static 模式在构建时获取数据并静态渲染，部署后数据不更新
 		// dynamic 模式在浏览器中实时请求 API，始终显示最新数据
@@ -327,6 +325,7 @@ export const siteConfig: SiteConfig = {
 			"*.bilibili.com",
 			"*.myanimelist.net",
 			"*.vndb.org",
+			"*.081531.xyz"
 		],
 	},
 
