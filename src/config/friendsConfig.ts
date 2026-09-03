@@ -22,7 +22,7 @@ export const tombstoneConfig: TombstoneConfig = {
 	// 墓碑数据源（友链检测失败/失效的站点列表）
 	url: "https://jsd.268682.xyz/gh/kmoretti/butterfly-link-check@main/link-false.yml",
 	// 墓碑标题
-	title: "🪵 友链墓碑 · 相逢何必曾相识~",
+	title: "🪵 友链墓碑 · 相逢何必曾相识",
 };
 
 export const friendsPageConfig: FriendsPageConfig = {
