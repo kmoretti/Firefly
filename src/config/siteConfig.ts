@@ -53,13 +53,7 @@ export const siteConfig: SiteConfig = {
 		"克喵的博客，我在这里记录一些文字，关于日常琐碎、踩坑教程和资源分享。",
 
 	// 站点关键词
-	keywords: [
-		"克喵Moretti",
-		"keMiao",
-		"Astro",
-		"博客",
-		"静态博客",
-	],
+	keywords: ["克喵Moretti", "keMiao", "Astro", "博客", "静态博客"],
 
 	// 主题色
 	themeColor: {
@@ -325,7 +319,7 @@ export const siteConfig: SiteConfig = {
 			"*.bilibili.com",
 			"*.myanimelist.net",
 			"*.vndb.org",
-			"*.081531.xyz"
+			"*.081531.xyz",
 		],
 	},
 
