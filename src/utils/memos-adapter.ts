@@ -159,7 +159,7 @@ async function fetchMemosInternal(
 	memosApiUrl: string,
 	options?: { pageSize?: number; maxPages?: number; parent?: string },
 ): Promise<DynamicEntry[]> {
-	const pageSize = options?.pageSize || 10000;
+	const pageSize = Math.min(options?.pageSize || 1000, 1000);
 	const maxPages = options?.maxPages || 10;
 	const parent = options?.parent || "";
 	const allMemos: Memo[] = [];

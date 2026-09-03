@@ -10,12 +10,12 @@ export const aboutConfig: AboutPageConfig = {
 		journey: true,
 	},
 	authorTags: {
-		left: ["💻 拥抱开源", "🚀 追求极致", "📚 持续学习", "🧠 热爱思考"],
-		right: ["☕ 咖啡续命", "🎵 灵感随行", "📷 记录美好", "🌱 保持好奇"],
+		left: ["💻 拥抱开源", "💻 ai编程", "📚 持续学习", "🧠 热爱思考"],
+		right: ["🎬 静态博客", "📖 小说爱好者", "📷 记录美好", "🌱 保持好奇"],
 	},
 	greeting: "你好！欢迎来到我的小站。",
-	introduction: "这里记录技术实践、阅读思考与数字世界里的日常探索。",
-	motto: "保持好奇，持续生长。",
+	introduction: "这里记录者我的一些文字，包括技术实践、博客魔改经历和字样分享。",
+	motto: "人生如逆旅，我亦是行人。",
 	skills: [
 		{ name: "Astro", icon: "simple-icons:astro" },
 		{ name: "TypeScript", icon: "simple-icons:typescript" },

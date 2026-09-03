@@ -1,0 +1,154 @@
+---
+title: 国内外分流实践：Cloudflare + EdgeOne 双端部署的踩坑记录
+published: 2026-09-03
+description: 给博客做国内外分流，把国内用户 302 到 EdgeOne 子域。文章记录了双端部署的完整思路，以及备案限制、CNAME、重定向规则、强制 HTTPS 这一路上的坑。
+tags: [Cloudflare, EdgeOne, 部署, CDN, 备案]
+category: 部署
+image: "https://openlist.081531.xyz/d/yidong/imgbed/blog-edgeone-cloudflare.webp"
+slug: edgeone-cloudflare-cn-routing
+---
+
+## 起因
+
+博客部署在 Cloudflare Pages，国内访问一直不太行。想着给国内用户单独开一条 EdgeOne 的路，谁让 EdgeOne 是腾讯云的呢，理论上国内节点应该会好一些。
+
+折腾完发现，**理论上**三个字，分量很重。
+
+先说结论：这套方案能不能显著加速国内访问，取决于你有没有备案。往下看你就明白了。
+
+## 最终架构
+
+先说清楚域名关系，这是后面所有配置的基础：
+
+- `kemeow.top` —— 根域名，DNS 托管在 Cloudflare
+- `b.kemeow.top` —— 博客主站，Cloudflare Pages
+- `cn.b.kemeow.top` —— 国内入口，EdgeOne Pages
+
+整体流程是这样的：
+
+```text
+PagesCMS 改文章
+  → push master
+  → GitHub Actions 构建（一次）
+  → 同时部署到 Cloudflare Pages + EdgeOne Pages
+  → 国内用户访问 b.kemeow.top，302 跳到 cn.b.kemeow.top
+  → 其他地区用户正常访问 Cloudflare
+```
+
+:::tip
+构建只跑一次，`dist` 是同一份，两个平台内容天然一致，不存在双份代码维护的问题。
+:::
+
+## GitHub Actions：一次构建，双端部署
+
+EdgeOne Pages 有一个坑：平台侧每个月只有 500 次构建额度。如果你让 EdgeOne 自己连仓库构建，文章一多、推送一频繁，额度很快就见底。
+
+所以正确姿势是：**工作流里自己构建，然后把产物直接推上去**（EdgeOne 叫 Direct Upload / 直接上传）。
+
+工作流改造很简单，在原有的 Cloudflare 部署步骤后面再加一步：
+
+```yaml
+- name: Deploy to EdgeOne Pages
+  env:
+    EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+  run: npx --yes edgeone pages deploy ./dist -n "$EDGEONE_PAGES_PROJECT" -t "$EDGEONE_API_TOKEN" -e production
+```
+
+PagesCMS 的工作方式完全不变，还是 push master 触发工作流，只是多了一个部署目标。
+
+## 最大的坑：备案
+
+这是整套方案里绕不开的一道坎。
+
+EdgeOne Pages 对自定义域名有一条硬性规定：
+
+- 加速区域选 **中国大陆可用区** 或 **全球可用区（含中国大陆）** → 绑定自定义域名**必须 ICP 备案**
+- 没备案 → 只能选 **全球可用区（不含中国大陆）**
+- 选了这个区域，默认分配的 Pages 域名在国内访问大概率返回 **401**，所以必须绑自己的自定义域名
+
+所以情况就是：
+
+| 你的状态 | 能选什么区域 | 国内加速效果 |
+| :--- | :--- | :--- |
+| 已备案 | 含中国大陆的区域 | ✅ 有国内节点 |
+| 未备案 | 仅全球（不含中国大陆） | ❌ 无国内节点，只是多一条线路 |
+
+:::warning
+我一开始在 EdgeOne 控制台创建项目，默认就是「中国大陆可用区」。没备案的情况下，这个区域是**改不了**的，只能把项目删掉重新建，创建时选「全球可用区（不含中国大陆）」。别问我怎么知道的。
+:::
+
+还有个细节：如果你的域名在别家已经备案过，在腾讯云这边用，需要做「接入备案」，不是重新备案一遍，但也要走流程。
+
+## EdgeOne 侧配置
+
+1. 创建项目，方式选**直接上传**，加速区域选「全球可用区（不含中国大陆）」
+2. 手动先部署一次（上传 dist），确认项目可用
+3. 域名管理里添加 `cn.b.kemeow.top`，按提示做归属校验
+4. 开启 HTTPS，然后开启**强制 HTTPS**
+   - HTTP → HTTPS 的重定向方式选 **301**（永久跳转，符合语义）
+5. 创建 API Token，权限包含 Pages 部署
+6. 把 Token 配到 GitHub 仓库 Secrets，名字叫 `EDGEONE_API_TOKEN`
+
+## Cloudflare 侧配置
+
+### 1. DNS CNAME
+
+添加一条：
+
+```text
+类型：CNAME
+名称：cn.b
+目标：（EdgeOne 控制台提供的 CNAME 值）
+代理状态：DNS only（灰色云朵）
+```
+
+:::warning
+这里有两个坑：
+- 名称要填 `cn.b`，不是 `cn`。填 `cn` 会变成 `cn.kemeow.top`，直接指向错误
+- 必须 **DNS only**（灰色云朵）。如果开代理（橙色云朵），请求会先过 Cloudflare 再过 EdgeOne，双重代理容易出问题，还可能和重定向规则打架
+:::
+
+### 2. 重定向规则
+
+在 Cloudflare 的 **Rules → Redirect Rules** 里新建规则，注意不是 URL 重写规则（那个只改路径、不能跨域跳转）。
+
+匹配方式选**自定义筛选表达式**，填：
+
+```text
+(ip.geoip.country eq "CN" and http.host eq "b.kemeow.top")
+```
+
+:::tip
+这个表达式只匹配中国大陆 IP 访问主站的情况。`cn.b.kemeow.top` 的 Host 不匹配，天然不会触发自己跳自己，不会形成循环。
+:::
+
+重定向 URL 选**表达式**模式，填：
+
+```text
+concat("https://cn.b.kemeow.top", http.request.uri.path)
+```
+
+保留查询字符串打开，状态码先用 **302**。
+
+为什么先 302？因为 301 会被浏览器缓存。调试期用了 301，后面改规则，用户浏览器里还是旧的跳转结果，很烦。确认稳定了再换 301 不迟。
+
+## 踩坑汇总
+
+按我实际踩的顺序整理一下，全是真金白银换来的：
+
+1. **项目建完发现区域选错，只能删了重建** —— 没备案别选含中国大陆的区域，选完改不了
+2. **默认 Pages 域名国内 401** —— 未备案区域下，必须绑自定义域名，别指望默认域名能用
+3. **把 API Token 写进代码** —— 绝对不要。放 GitHub Secrets，工作流里通过 `${{ secrets.EDGEONE_API_TOKEN }}` 引用
+4. **CNAME 名称填成 `cn`** —— 正确是 `cn.b`，指向 `cn.b.kemeow.top`
+5. **DNS 开了 Cloudflare 代理** —— 必须 DNS only，否则双重代理、证书错乱、重定向循环都可能来
+6. **想用 URL 重写规则代替重定向** —— 不行，重写不改变浏览器地址栏，跨域跳转只能走 Redirect Rules
+7. **匹配方式选成"所有传入请求"** —— 会把全球所有地区都跳过去，必须用自定义筛选表达式限定国内 IP
+8. **301 用太早** —— 浏览器缓存跳转结果，调试期务必用 302
+
+## 写在最后
+
+这套方案做完，代码侧的改动其实很小，大头全在控制台配置。而且最后要诚实地说一句：**没备案的话，EdgeOne 没有国内节点**，分流只是给国内用户换了一条线路，能不能更快取决于 EdgeOne 对国内的连通性，未必有质的飞跃。
+
+如果你的诉求是"国内访问必须快"，那还是老老实实备案，走含中国大陆的区域。如果只是想要个双线冗余，那这套方案完全够用。
+
+权当给同样在折腾的人一个参考。
