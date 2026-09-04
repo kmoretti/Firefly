@@ -1,17 +1,17 @@
 <script lang="ts">
-	/**
-	 * AI 摘要卡片 - Svelte 5 岛屿组件
-	 *
-	 * 复刻参考站 Excerpt.vue 的样式与交互：
-	 * - AI 图标 + 标题 + badge
-	 * - 打字机逐字动画 + 闪烁光标
-	 * - 窄屏（≤768px）长摘要折叠展开
-	 * - prefers-reduced-motion 时直接完整展示
-	 */
+/**
+ * AI 摘要卡片 - Svelte 5 岛屿组件
+ *
+ * 复刻参考站 Excerpt.vue 的样式与交互：
+ * - AI 图标 + 标题 + badge
+ * - 打字机逐字动画 + 闪烁光标
+ * - 窄屏（≤768px）长摘要折叠展开
+ * - prefers-reduced-motion 时直接完整展示
+ */
 
-	import Icon from "@/components/common/Icon.svelte";
+import Icon from "@/components/common/Icon.svelte";
 
-	interface Props {
+interface Props {
 	summary: string;
 	label?: string;
 	badge?: string;
