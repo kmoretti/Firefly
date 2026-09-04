@@ -1,7 +1,10 @@
 export type { AboutPageConfig, SkillItem } from "./aboutConfig";
 export type { AnalyticsConfig } from "./analyticsConfig";
 export type { AnnouncementConfig } from "./announcementConfig";
-export type { BackgroundWallpaperConfig } from "./backgroundWallpaper";
+export type {
+	BackgroundWallpaperConfig,
+	FullscreenWallpaperLayout,
+} from "./backgroundWallpaper";
 export type {
 	BooknavFaviconConfig,
 	BooknavGroup,

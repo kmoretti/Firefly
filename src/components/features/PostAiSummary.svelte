@@ -1,15 +1,17 @@
 <script lang="ts">
-/**
- * AI 摘要卡片 - Svelte 5 岛屿组件
- *
- * 复刻参考站 Excerpt.vue 的样式与交互：
- * - AI 图标 + 标题 + badge
- * - 打字机逐字动画 + 闪烁光标
- * - 窄屏（≤768px）长摘要折叠展开
- * - prefers-reduced-motion 时直接完整展示
- */
+	/**
+	 * AI 摘要卡片 - Svelte 5 岛屿组件
+	 *
+	 * 复刻参考站 Excerpt.vue 的样式与交互：
+	 * - AI 图标 + 标题 + badge
+	 * - 打字机逐字动画 + 闪烁光标
+	 * - 窄屏（≤768px）长摘要折叠展开
+	 * - prefers-reduced-motion 时直接完整展示
+	 */
 
-interface Props {
+	import Icon from "@/components/common/Icon.svelte";
+
+	interface Props {
 	summary: string;
 	label?: string;
 	badge?: string;
@@ -114,21 +116,7 @@ $effect(() => {
 				class="inline-flex h-5 w-5 items-center justify-center rounded-md bg-linear-to-br from-(--primary) to-(--primary)/60 text-white"
 				aria-hidden="true"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="13"
-					height="13"
-					viewBox="0 0 24 24"
-					fill="currentColor"
-				>
-					<path
-						d="M12 2L14.4 8.4L21 11L14.4 13.6L12 20L9.6 13.6L3 11L9.6 8.4L12 2Z"
-					/>
-					<path
-						d="M19 15L20.2 18L23 19.2L20.2 20.4L19 23L17.8 20.4L15 19.2L17.8 18L19 15Z"
-						opacity="0.85"
-					/>
-				</svg>
+				<Icon icon="material-symbols:smart-toy-outline" style="font-size: 13px" />
 			</span>
 			<span class="text-[0.95rem]">{label}</span>
 		</div>
