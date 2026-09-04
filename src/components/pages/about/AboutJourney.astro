@@ -1,0 +1,12 @@
+---
+import { aboutConfig } from "@/config";
+
+const { tips, title, description } = aboutConfig.journey;
+---
+
+<section class="card-base p-6 sm:p-8">
+	<p class="mb-2 text-xs font-medium text-neutral-500 opacity-80 dark:text-neutral-400">{tips}</p>
+	<h2 class="mb-3 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{title}</h2>
+	{description && <p class="break-words leading-7 text-neutral-600 dark:text-neutral-400">{description}</p>}
+	<slot />
+</section>

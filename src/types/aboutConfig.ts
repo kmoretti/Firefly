@@ -3,12 +3,24 @@ export type SkillItem = {
 	icon?: string;
 };
 
+export type AboutIntroConfig = {
+	tips: string;
+	titleLines: [string, string];
+	titleEnd: string;
+	rotatingWords: string[];
+};
+
+export type AboutJourneyConfig = {
+	tips: string;
+	title: string;
+	description: string;
+};
+
 export type AboutPageConfig = {
 	enable: boolean;
 	modules: {
 		profile: boolean;
-		greeting: boolean;
-		introduction: boolean;
+		intro: boolean;
 		skills: boolean;
 		journey: boolean;
 	};
@@ -16,8 +28,7 @@ export type AboutPageConfig = {
 		left: string[];
 		right: string[];
 	};
-	greeting: string;
-	introduction: string;
-	motto: string;
+	intro: AboutIntroConfig;
 	skills: SkillItem[];
+	journey: AboutJourneyConfig;
 };

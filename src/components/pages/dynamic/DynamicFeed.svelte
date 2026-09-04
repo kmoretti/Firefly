@@ -2,7 +2,8 @@
 import { onMount, tick } from "svelte";
 import ClientPagination from "@/components/common/ClientPagination.svelte";
 import { formatTimezoneOffset } from "@/utils/date-utils";
-import { fetchMemos } from "@/utils/memos-adapter";
+import { fetchWithDedup } from "@/utils/fetch-dedup";
+import { url } from "@/utils/url-utils";
 import { registerDynamicGallery } from "./dynamic-gallery";
 import { registerDynamicInlineComments } from "./dynamic-inline-comments";
 
@@ -20,6 +21,7 @@ type DynamicData = {
 	searchText: string;
 	pinned?: boolean;
 	location?: string;
+	tags?: string[];
 };
 
 interface MemosConfig {
@@ -55,6 +57,7 @@ const {
 let entries = $state<DynamicData[]>([]);
 let filtered = $state<DynamicData[]>([]);
 let currentPage = $state(1);
+let activeTag = $state<string | null>(null);
 let loading = $state(true);
 let failed = $state(false);
 let templateReady = $state(false);
@@ -75,10 +78,16 @@ function pageFromUrl() {
 	);
 }
 
+function tagFromUrl() {
+	return new URL(window.location.href).searchParams.get("tag") || null;
+}
+
 function updateUrl(clearHash = false) {
 	const current = new URL(window.location.href);
 	if (currentPage > 1) current.searchParams.set("page", String(currentPage));
 	else current.searchParams.delete("page");
+	if (activeTag) current.searchParams.set("tag", activeTag);
+	else current.searchParams.delete("tag");
 	if (clearHash) current.hash = "";
 	history.replaceState(history.state, "", current);
 }
@@ -90,12 +99,19 @@ function applyFilters(resetPage = true) {
 		(entry) =>
 			(year === "all" ||
 				String(new Date(entry.published).getUTCFullYear()) === year) &&
-			(!query || entry.searchText.includes(query)),
+			(!query || entry.searchText.includes(query)) &&
+			(!activeTag || entry.tags?.includes(activeTag)),
 	);
 	if (resetPage) currentPage = 1;
 	const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
 	currentPage = Math.min(currentPage, totalPages);
 	updateUrl(resetPage);
+}
+
+// 点击卡片标签：筛选该标签；再次点击取消
+function toggleTagFilter(tag: string) {
+	activeTag = activeTag === tag ? null : tag;
+	applyFilters(true);
 }
 
 function populateYears() {
@@ -214,6 +230,28 @@ function createItem(entry: DynamicData) {
 		if (gallery) gallery.dataset.sourceId = content.id;
 	}
 
+	// 标签：点击筛选，再次点击取消
+	const tagsEl = root.querySelector<HTMLElement>("[data-dynamic-tags]");
+	if (tagsEl) {
+		const entryTags = entry.tags || [];
+		if (entryTags.length) {
+			tagsEl.replaceChildren();
+			for (const tag of entryTags) {
+				const button = document.createElement("button");
+				button.type = "button";
+				button.className = "dynamic-tag";
+				button.textContent = `#${tag}`;
+				button.setAttribute("aria-pressed", String(activeTag === tag));
+				if (activeTag === tag) button.dataset.active = "true";
+				button.addEventListener("click", () => toggleTagFilter(tag));
+				tagsEl.append(button);
+			}
+			tagsEl.removeAttribute("hidden");
+		} else {
+			tagsEl.setAttribute("hidden", "");
+		}
+	}
+
 	// 置顶标识
 	const pinned = root.querySelector<HTMLElement>("[data-dynamic-pinned]");
 	if (pinned) {
@@ -286,7 +324,9 @@ onMount(() => {
 	const load = async () => {
 		try {
 			if (memos?.enable) {
-				entries = await fetchMemos(memos.apiUrl, { parent: memos.parent });
+				const data = (await fetchWithDedup(url("/api/memos.json"))) as unknown;
+				if (!Array.isArray(data)) throw new Error("Invalid memos payload");
+				entries = data;
 			} else {
 				const response = await fetch(source);
 				if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -297,6 +337,7 @@ onMount(() => {
 			if (countEl) countEl.textContent = String(entries.length);
 			populateYears();
 			currentPage = pageFromUrl();
+			activeTag = tagFromUrl();
 			applyFilters(false);
 			const anchorId = decodeURIComponent(window.location.hash.slice(1));
 			if (anchorId) {

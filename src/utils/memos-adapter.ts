@@ -27,6 +27,7 @@ interface Memo {
 	pinned: boolean;
 	attachments: MemoAttachment[];
 	location?: MemoLocation;
+	tags?: string[];
 }
 
 interface MemosApiResponse {
@@ -48,6 +49,8 @@ export interface DynamicEntry {
 	searchText: string;
 	pinned?: boolean;
 	location?: string;
+	/** 说说携带的标签，供前端卡片展示与点击筛选 */
+	tags?: string[];
 }
 
 /**
@@ -89,6 +92,30 @@ function extractPlainText(content: string): string {
 		.replace(/[#>*_`~[\]()-]/g, " ")
 		.replace(/\s+/g, " ")
 		.trim();
+}
+
+/**
+ * 转义正则表达式中的特殊字符，用于把标签名安全地嵌入匹配模式
+ */
+function escapeRegExp(text: string): string {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * 从内容中移除与 Memos 标签精确匹配的 "#标签" 标记文本
+ * 仅移除标签后紧跟空白、Unicode 标点或行尾的匹配，
+ * 避免误删 "#吐槽了" 这类以标签名开头但并非标签的普通文本
+ */
+function stripTagsFromContent(content: string, tags: string[]): string {
+	let result = content;
+	for (const tag of tags) {
+		const escaped = escapeRegExp(tag);
+		result = result.replace(
+			new RegExp(`#${escaped}(?=[\\s\\p{P}]|$)`, "gu"),
+			"",
+		);
+	}
+	return result;
 }
 
 /**
@@ -143,7 +170,14 @@ const pendingRequests = new Map<string, Promise<DynamicEntry[]>>();
  */
 export async function fetchMemos(
 	memosApiUrl: string,
-	options?: { pageSize?: number; maxPages?: number; parent?: string },
+	options?: {
+		pageSize?: number;
+		maxPages?: number;
+		parent?: string;
+		tags?: string[];
+		/** 是否在渲染前从内容中移除 "#标签" 标记文本，默认开启 */
+		hideTagsInContent?: boolean;
+	},
 ): Promise<DynamicEntry[]> {
 	const cacheKey = `${memosApiUrl}:${options?.parent || ""}`;
 	const pending = pendingRequests.get(cacheKey);
@@ -157,11 +191,19 @@ export async function fetchMemos(
 
 async function fetchMemosInternal(
 	memosApiUrl: string,
-	options?: { pageSize?: number; maxPages?: number; parent?: string },
+	options?: {
+		pageSize?: number;
+		maxPages?: number;
+		parent?: string;
+		tags?: string[];
+		/** 是否在渲染前从内容中移除 "#标签" 标记文本，默认开启 */
+		hideTagsInContent?: boolean;
+	},
 ): Promise<DynamicEntry[]> {
 	const pageSize = Math.min(options?.pageSize || 1000, 1000);
 	const maxPages = options?.maxPages || 10;
 	const parent = options?.parent || "";
+	const hideTagsInContent = options?.hideTagsInContent ?? true;
 	const allMemos: Memo[] = [];
 	let pageToken = "";
 
@@ -169,7 +211,8 @@ async function fetchMemosInternal(
 		const url = new URL(`${memosApiUrl}/api/v1/memos`);
 		url.searchParams.set("pageSize", String(pageSize));
 		if (parent) {
-			url.searchParams.set("parent", parent);
+			// Memos 0.30 起 ListMemos 不再支持 parent 查询参数，改用官方 filter 表达式过滤指定用户
+			url.searchParams.set("filter", `creator == "${parent}"`);
 		}
 		if (pageToken) {
 			url.searchParams.set("pageToken", pageToken);
@@ -177,6 +220,8 @@ async function fetchMemosInternal(
 
 		const response = await fetch(url.toString(), {
 			headers: { Accept: "application/json" },
+			// 单页请求超时，避免上游无响应时代理端点无限挂起
+			signal: AbortSignal.timeout(15_000),
 		});
 
 		if (!response.ok) {
@@ -192,18 +237,29 @@ async function fetchMemosInternal(
 		pageToken = data.nextPageToken;
 	}
 
-	// Memos 的 ListMemos API 并不会按 parent 过滤 creator（实测带不带 parent 返回结果一致），
-	// 因此这里在客户端按 creator 二次过滤，确保只显示指定用户的动态
+	// filter 表达式已在服务端按 creator 过滤，这里仍按 creator 二次过滤兜底，
+	// 避免不同 Memos 版本的 filter 行为差异导致显示其他用户的动态
 	const userFilteredMemos = parent
 		? allMemos.filter((memo) => memo.creator === parent)
 		: allMemos;
+	const tags = options?.tags?.map((tag) => tag.trim()).filter(Boolean) || [];
+	const filteredMemos = tags.length
+		? userFilteredMemos.filter((memo) =>
+				tags.some((tag) => memo.tags?.includes(tag)),
+			)
+		: userFilteredMemos;
 
-	return userFilteredMemos
+	return filteredMemos
 		.filter((memo) => memo.state === "NORMAL")
 		.map((memo) => {
 			const id = memo.name.split("/").pop() || "";
 			const published = new Date(memo.createTime).getTime();
-			const html = markdownToHtml(memo.content);
+			const memoTags = memo.tags || [];
+			// 隐藏标签时在渲染前移除内容中的 "#标签" 文本，标签仍由独立 chips 展示
+			const content = hideTagsInContent
+				? stripTagsFromContent(memo.content, memoTags)
+				: memo.content;
+			const html = markdownToHtml(content);
 			const images = extractImages(memo, memosApiUrl);
 			const location = memo.location?.placeholder?.trim() || "";
 			const searchText = [extractPlainText(memo.content), location]
@@ -211,6 +267,7 @@ async function fetchMemosInternal(
 				.join(" ")
 				.toLocaleLowerCase();
 			const pinned = memo.pinned || false;
+			const tags = memoTags;
 
 			return {
 				id,
@@ -220,6 +277,7 @@ async function fetchMemosInternal(
 				searchText,
 				pinned,
 				location,
+				tags,
 			};
 		})
 		.sort((a, b) => {

@@ -23,8 +23,9 @@ export const dynamicConfig: DynamicConfig = {
 	apiUrl: "/api/dynamic.json",
 
 	// ========== Memos 配置 ==========
-	// 启用后客户端会直接从 Memos API 实时获取数据，apiUrl 配置将被忽略
-	// Memos 记得配置 CORS，否则可能会出现跨域问题
+	// 启用后客户端通过 /api/memos.json 同源代理实时获取数据，apiUrl 配置将被忽略
+	// 注意：Memos 0.30+ 需为实例设置 --instance-url 或环境变量 MEMOS_INSTANCE_URL，
+	// 否则实例运行在私有模式，匿名 API 访问会返回 authentication required
 	memos: {
 		// 是否启用 Memos 数据源
 		enable: true,
@@ -35,5 +36,14 @@ export const dynamicConfig: DynamicConfig = {
 		// Memos 用户标识，如 "users/你的memos用户名"，用于过滤指定用户的动态
 		// 注意：需与 Memos API 返回的 creator 字段完全一致（区分大小写），例如实际用户名为 admin 时应为 "users/admin"，而非"users/Admin"
 		parent: "users/kemiao",
+
+		// 服务端预过滤：只保留包含任意一个标签的动态，留空则不筛选
+		// 注意：与前端卡片标签点击筛选是两层机制——
+		// 此处留空让全部数据进入前端，点击卡片上的标签即可交互式筛选
+		tags: [],
+
+		// 是否在正文中隐藏 "#标签" 文本（标签仍以独立 chips 形式展示在卡片上）
+		// 开启后，说说正文里不会出现 "#项目" 这类标签文本；关闭则原样保留
+		hideTagsInContent: true,
 	},
 };

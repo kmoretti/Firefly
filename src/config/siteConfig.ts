@@ -12,6 +12,7 @@ const pages = resolvePageToggles({
 
 	// 友链页面开关
 	friends: true,
+	fcircle: true,
 	// 留言板页面开关，需要配置评论系统
 	guestbook: true,
 

@@ -21,4 +21,8 @@ export type DynamicMemocsConfig = {
 	apiUrl: string;
 	/** Memos 用户标识，如 "users/xiaye"，用于过滤指定用户的动态 */
 	parent?: string;
+	/** 只保留包含任意一个标签的动态 */
+	tags?: string[];
+	/** 是否在渲染前从内容中移除 "#标签" 标记文本（标签仍由独立 chips 展示），默认开启 */
+	hideTagsInContent?: boolean;
 };

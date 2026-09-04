@@ -1,0 +1,94 @@
+---
+import { aboutConfig } from "@/config";
+
+const { tips, titleLines, titleEnd, rotatingWords } = aboutConfig.intro;
+const gradients = [
+	"linear-gradient(45deg, #0ecffe 50%, #07a6f1)",
+	"linear-gradient(45deg, #18e198 50%, #0ec15d)",
+	"linear-gradient(45deg, #8a7cfb 50%, #633e9c)",
+	"linear-gradient(45deg, #fa7671 50%, #f45f7f)",
+];
+---
+
+<section class="card-base p-6 sm:p-8">
+	<p class="about-intro-tips">{tips}</p>
+	<h2 class="text-4xl font-bold leading-[1.06] tracking-[-0.02em] text-neutral-900 dark:text-neutral-100">
+		{titleLines[0]}
+		<br />
+		{titleLines[1]}
+		<span>{titleEnd}</span>
+		<span class="sr-only">{rotatingWords[0]}</span>
+		<span class="about-intro-mask" aria-hidden="true">
+			{rotatingWords.map((word, i) => (
+				<span
+					class="about-intro-rotating"
+					data-index={i}
+					style={`--word-gradient: ${gradients[i % gradients.length]}; --word-index: ${i};`}
+				>
+					{word}
+				</span>
+			))}
+		</span>
+	</h2>
+</section>
+
+<style>
+	.about-intro-tips {
+		margin-bottom: 0.5rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		opacity: 0.8;
+	}
+	.about-intro-mask {
+		display: block;
+		position: relative;
+		height: 36px;
+		margin-top: 4px;
+		overflow: hidden;
+	}
+	.about-intro-rotating {
+	display: block;
+	position: absolute;
+	top: 36px;
+	/* 高度必须与 mask 一致：text-4xl 基于 rem，移动端根字号更小导致词高 < 36px，
+	   translateY(-200%) 时底边会残留在 mask 顶部（移动端轮播残影的根因） */
+	height: 36px;
+	line-height: 36px;
+	box-sizing: border-box;
+	background: var(--word-gradient);
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+	animation: about-intro-roll 8s ease-in-out both infinite;
+	animation-delay: calc(var(--word-index) * 2s);
+}
+	@keyframes about-intro-roll {
+		0% {
+			transform: translateY(0);
+		}
+		6.25% {
+			transform: translateY(-100%);
+		}
+		25% {
+			transform: translateY(-100%);
+		}
+		31.25% {
+			transform: translateY(-200%);
+		}
+		100% {
+			transform: translateY(-200%);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.about-intro-rotating {
+			animation: none;
+			transform: translateY(-100%);
+		}
+		.about-intro-rotating:not([data-index="0"]) {
+			display: none;
+		}
+	}
+</style>

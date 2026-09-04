@@ -1,0 +1,107 @@
+---
+import ImageWrapper from "@components/common/ImageWrapper.astro";
+import { Icon } from "astro-icon/components";
+import { aboutConfig, profileConfig } from "@/config";
+---
+
+<div class="flex flex-col items-center gap-4 py-4 text-center select-none">
+	<div class="about-profile-row flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-0">
+		{aboutConfig.authorTags.left.length > 0 && (
+			<div class="about-tags-left flex flex-row flex-wrap justify-center gap-2 sm:flex-col sm:items-end">
+				{aboutConfig.authorTags.left.map((tag) => (
+					<span class="about-tag">{tag}</span>
+				))}
+			</div>
+		)}
+		<div class="order-first sm:order-none sm:mx-[30px]">
+			<ImageWrapper
+				src={profileConfig.avatar || ""}
+				alt={profileConfig.name}
+				class="h-[180px] w-[180px] rounded-full transition-transform duration-300 hover:scale-[1.02]"
+				loading="eager"
+				fetchpriority="high"
+				widths={[384]}
+				sizes="180px"
+			/>
+		</div>
+		{aboutConfig.authorTags.right.length > 0 && (
+			<div class="about-tags-right flex flex-row flex-wrap justify-center gap-2 sm:flex-col sm:items-start">
+				{aboutConfig.authorTags.right.map((tag) => (
+					<span class="about-tag">{tag}</span>
+				))}
+			</div>
+		)}
+	</div>
+	<h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-100 sm:text-3xl">{profileConfig.name}</h1>
+	{profileConfig.bio && <p class="max-w-xl break-words text-neutral-600 dark:text-neutral-400">{profileConfig.bio}</p>}
+	<div class="flex flex-wrap justify-center gap-2">
+		{profileConfig.links.map((item) => (
+			<a
+				rel="me"
+				aria-label={item.name}
+				href={item.url}
+				target={item.url.startsWith("mailto:") ? undefined : "_blank"}
+				class="btn-regular inline-flex h-10 items-center gap-2 rounded-lg px-3 active:scale-95"
+			>
+				<Icon name={item.icon} class="text-xl" />
+				{item.showName && item.name}
+			</a>
+		))}
+	</div>
+</div>
+
+<style>
+	.about-tag {
+		padding: 1px 10px;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		line-height: 1.75;
+		font-weight: 700;
+		white-space: nowrap;
+		color: var(--btn-content);
+		background: var(--btn-regular-bg);
+		border: 1px solid var(--line-divider);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+		animation: about-tag-float 6s ease-in-out infinite;
+		will-change: transform, opacity;
+	}
+	.about-tag:nth-child(1) {
+		animation-delay: 0s;
+	}
+	.about-tag:nth-child(2) {
+		animation-delay: 0.6s;
+	}
+	.about-tag:nth-child(3) {
+		animation-delay: 1.2s;
+	}
+	.about-tag:nth-child(4) {
+		animation-delay: 1.8s;
+	}
+	@keyframes about-tag-float {
+		0%,
+		100% {
+			transform: translateY(-2px) scale(1);
+			opacity: 1;
+		}
+		50% {
+			transform: translateY(-9px) scale(1.05);
+			opacity: 0.9;
+		}
+	}
+	@media (min-width: 640px) {
+		.about-tags-left .about-tag:first-child,
+		.about-tags-left .about-tag:last-child {
+			margin-right: -16px;
+		}
+	}
+	@media (max-width: 639px) {
+		.about-tag {
+			animation-duration: 4s;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.about-tag {
+			animation: none;
+		}
+	}
+</style>

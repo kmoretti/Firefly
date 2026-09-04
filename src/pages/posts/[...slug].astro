@@ -4,7 +4,9 @@ import Comment from "@components/comment/index.astro";
 import Markdown from "@components/common/Markdown.astro";
 import EncryptedPost from "@components/features/EncryptedPost.astro";
 import KatexManager from "@components/features/KatexManager.astro";
+import PostAiSummary from "@components/features/PostAiSummary.svelte";
 import License from "@components/misc/License.astro";
+import SharePoster from "@components/misc/SharePoster.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -26,7 +28,7 @@ import CoverImage from "@/components/common/CoverImage.astro";
 import PostMetadata from "@/components/layout/PostMeta.astro";
 import RecommendedPost from "@/components/misc/RecommendedPost.astro";
 import SeriesNav from "@/components/misc/SeriesNav.astro";
-import SharePoster from "@/components/misc/SharePoster.svelte";
+import { aiSummaryConfig } from "@/config/aiSummaryConfig";
 import { coverImageConfig } from "@/config/coverImageConfig";
 import { licenseConfig } from "@/config/licenseConfig";
 import { profileConfig } from "@/config/profileConfig";
@@ -492,6 +494,16 @@ const seriesData = await getSeriesPosts(entry);
         </EncryptedPost>
       ) : (
         <>
+          {entry.data.aiSummary && aiSummaryConfig.enable && (
+            <PostAiSummary
+              client:visible
+              summary={entry.data.aiSummary}
+              label={aiSummaryConfig.label}
+              badge={aiSummaryConfig.badge}
+              typingSpeedMs={aiSummaryConfig.typingSpeedMs}
+              foldThresholdChars={aiSummaryConfig.foldThresholdChars}
+            />
+          )}
           <Markdown class="mb-6 markdown-content onload-animation">
             <Content />
           </Markdown>
