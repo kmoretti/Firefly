@@ -30,7 +30,7 @@ let {
 // SSR 先渲染完整文本，水合后再启动动画，避免空白与布局跳动
 let displayed = $state(summary);
 let caretVisible = $state(false);
-let isFolded = $state(true);
+let isFolded = $state(summary.length > foldThresholdChars);
 let isNarrowScreen = $state(false);
 let isReducedMotion = $state(false);
 
@@ -166,7 +166,7 @@ $effect(() => {
 	}
 
 	.ai-summary-content--folded {
-		max-height: 4.8em;
+		max-height: 7.2em;
 		opacity: 0.96;
 	}
 
