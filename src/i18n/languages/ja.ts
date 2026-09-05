@@ -530,4 +530,16 @@ export const ja: Translation = {
 	[Key.exitImmersiveReading]: "没入型リーディングを終了する",
 	[Key.tocExpand]: "目錄を開く",
 	[Key.tocCollapse]: "目錄をたたむ",
+
+	// 外部リンク転送ページ
+	[Key.goPageTitle]: "このサイトを離れようとしています",
+	[Key.goPageDescription]:
+		"記事内の外部リンクは安全確認ページを経由します。続行する前にリンクの安全性をご確認ください。",
+	[Key.goLeaveText]: "このサイトを離れて、次のリンクに移動します：",
+	[Key.goAutoJump]: "自動遷移まで",
+	[Key.goJumpNow]: "今すぐ移動",
+	[Key.goBackHome]: "ホームに戻る",
+	[Key.goInvalidLink]: "リンクが無効または壊れているため、移動できません",
+	[Key.goWarning]: "続行する前に、リンク先の安全性をご自身でご確認ください",
+	[Key.goBack]: "戻る",
 };

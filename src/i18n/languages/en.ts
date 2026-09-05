@@ -532,4 +532,16 @@ export const en: Translation = {
 	[Key.exitImmersiveReading]: "Exit Immersive Reading",
 	[Key.tocExpand]: "Expand directory",
 	[Key.tocCollapse]: "Collapse directory",
+
+	// External Link Redirect Page
+	[Key.goPageTitle]: "Leaving this site",
+	[Key.goPageDescription]:
+		"External links in articles go through a redirect page. Please verify the target link is safe before continuing.",
+	[Key.goLeaveText]: "You are about to leave this site and go to:",
+	[Key.goAutoJump]: "Redirecting in",
+	[Key.goJumpNow]: "Go now",
+	[Key.goBackHome]: "Back to home",
+	[Key.goInvalidLink]: "The link is invalid or broken and cannot be opened",
+	[Key.goWarning]: "Please confirm the target link is safe before continuing",
+	[Key.goBack]: "Go back",
 };

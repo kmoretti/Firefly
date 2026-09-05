@@ -1,17 +1,26 @@
 ---
 import type { GetStaticPaths } from "astro";
 import Pagination from "@/components/common/Pagination.astro";
+import HomeFeaturedCarousel from "@/components/layout/HomeFeaturedCarousel.astro";
+import HomeSpotlight from "@/components/layout/HomeSpotlight.astro";
 import PostPage from "@/components/layout/PostPage.astro";
 import { siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@/utils/content-utils";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { processCoverImageSync } from "@/utils/image-utils";
+import { getPostUrlBySlug } from "@/utils/url-utils";
 export const getStaticPaths = (async ({ paginate }) => {
 	const allBlogPosts = await getSortedPosts();
+	// 置顶文章从首页分页列表移出，改由首页第 1 页的置顶堆叠区展示
+	const pagePosts = siteConfig.homeSpotlight?.enable
+		? allBlogPosts.filter((post) => !post.data.pinned)
+		: allBlogPosts;
 	// 使用配置中的文章数量
 	const pageSize = siteConfig.pagination.postsPerPage;
-	return paginate(allBlogPosts, { pageSize });
+	return paginate(pagePosts, { pageSize });
 }) satisfies GetStaticPaths;
 // https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
 
@@ -24,9 +33,106 @@ const heading =
 	page.currentPage === 1
 		? siteConfig.title
 		: `${i18n(I18nKey.home)} · ${page.currentPage}`;
+
+// ── 首页第 1 页的置顶堆叠 + 随便逛逛 + 推荐文章轮播数据 ──
+const spotlightConfig = siteConfig.homeSpotlight;
+const featuredConfig = siteConfig.homeFeatured;
+const isFirstPage = page.currentPage === 1;
+
+// 置顶文章卡片数据（仅 spotlight 开启时填充）
+const pinnedPosts: {
+	title: string;
+	url: string;
+	cover: string;
+	description: string;
+	category: string | null;
+	date: string;
+}[] = [];
+
+// 随便逛逛随机池：非加密文章（仅 spotlight 与 wander 均开启时填充）
+const wanderPosts: { title: string; url: string; cover: string }[] = [];
+
+// 周刊轮播卡片数据（仅 featured 开启时填充）
+const featuredPosts: {
+	title: string;
+	url: string;
+	cover: string;
+	description: string;
+}[] = [];
+
+if (isFirstPage && (spotlightConfig?.enable || featuredConfig?.enable)) {
+	// getStaticPaths 已将置顶文章移出分页列表，这里重新取全量文章
+	const allPosts = await getSortedPosts();
+	// wander 开关由 HomeSpotlight 内部判断，这里仅在开启时构造数据以省构建时间
+	const wanderEnabled = spotlightConfig?.wander.enable ?? true;
+
+	for (const post of allPosts) {
+		const postUrl = getPostUrlBySlug(post.id);
+		const cover = processCoverImageSync(post.data.image, post.id);
+
+		// 置顶文章 → 首页堆叠卡片
+		if (spotlightConfig?.enable && post.data.pinned) {
+			pinnedPosts.push({
+				title: post.data.title,
+				url: postUrl,
+				cover,
+				description: post.data.description,
+				category: post.data.category,
+				date: formatDateToYYYYMMDD(post.data.published),
+			});
+		}
+
+		// 加密文章（有 password）不进入随便逛逛随机池
+		if (spotlightConfig?.enable && wanderEnabled && !post.data.password) {
+			wanderPosts.push({
+				title: post.data.title,
+				url: postUrl,
+				cover,
+			});
+		}
+	}
+
+	// 推荐文章轮播：筛选 recommended 标记的文章（getSortedPosts 已按置顶+发布时间降序），截取 maxCount 篇
+	if (featuredConfig?.enable) {
+		const base = allPosts
+			.filter((post) => post.data.recommended)
+			.slice(0, featuredConfig.maxCount)
+			.map((post) => ({
+				title: post.data.title,
+				url: getPostUrlBySlug(post.id),
+				cover: processCoverImageSync(post.data.image, post.id),
+				description: post.data.description,
+			}));
+		featuredPosts.push(...base);
+		// 数量不足 visibleCount 时循环补齐（如 3 篇补到 4：第 4 张 = 第 1 篇）
+		if (base.length > 0) {
+			for (let i = 0; featuredPosts.length < featuredConfig.visibleCount; i++) {
+				featuredPosts.push(base[i % base.length]);
+			}
+		}
+	}
+}
 ---
 
 <MainGridLayout heading={heading}>
+  {
+    isFirstPage && featuredPosts.length > 0 && (
+      <HomeFeaturedCarousel
+        posts={featuredPosts}
+        title={featuredConfig?.title}
+        visibleCount={featuredConfig?.visibleCount}
+      />
+    )
+  }
+  {
+    isFirstPage && (pinnedPosts.length > 0 || wanderPosts.length > 0) && (
+      <HomeSpotlight
+        pinnedPosts={pinnedPosts}
+        wanderPosts={wanderPosts}
+        interval={spotlightConfig?.interval}
+      />
+    )
+  }
   <PostPage page={page} />
   {
     page.total > page.size && (

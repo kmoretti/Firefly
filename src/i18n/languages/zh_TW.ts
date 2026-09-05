@@ -521,4 +521,16 @@ export const zh_TW: Translation = {
 	[Key.exitImmersiveReading]: "退出沉浸閱讀",
 	[Key.tocExpand]: "展開目錄",
 	[Key.tocCollapse]: "摺疊目錄",
+
+	// 外鏈中轉頁
+	[Key.goPageTitle]: "即將離開本站",
+	[Key.goPageDescription]:
+		"本站文章中的外鏈會經過安全中轉頁，請確認目標鏈接可信後再繼續訪問。",
+	[Key.goLeaveText]: "您即將離開本站，跳轉到：",
+	[Key.goAutoJump]: "自動跳轉倒數",
+	[Key.goJumpNow]: "立即前往",
+	[Key.goBackHome]: "返回首頁",
+	[Key.goInvalidLink]: "鏈接無效或已損壞，無法跳轉",
+	[Key.goWarning]: "請自行確認目標鏈接的安全性後再繼續訪問",
+	[Key.goBack]: "返回",
 };

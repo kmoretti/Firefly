@@ -1,0 +1,1016 @@
+---
+import RandomPostWander from "@components/features/RandomPostWander.svelte";
+import { Icon } from "astro-icon/components";
+import { siteConfig } from "@/config";
+
+// 首页「置顶卡片堆叠 + 随便逛逛」：
+// 桌面端（≥769px）3.5fr 随便逛逛 + 6.5fr 置顶堆叠双列网格，
+// 移动端（≤768px）只渲染置顶堆叠（随便逛逛按钮隐藏，与参考站一致）。
+// 堆叠交互（自动轮换 / hover 暂停 / 触摸滑动 / prev-next）完整移植参考站 spotlight-stack。
+interface PinnedPostCard {
+	title: string;
+	url: string;
+	/** 处理后的封面 URL，空串则显示主题色渐变占位 */
+	cover: string;
+	/** 摘要 */
+	description: string;
+	category: string | null;
+	/** 格式化后的日期字符串 YYYY-MM-DD */
+	date: string;
+}
+
+interface Props {
+	/** 置顶文章卡片数据 */
+	pinnedPosts: PinnedPostCard[];
+	/** 随便逛逛随机文章池 */
+	wanderPosts: { title: string; url: string; cover: string }[];
+	/** 自动轮换间隔 ms，默认 4200 */
+	interval?: number;
+}
+
+const { pinnedPosts, wanderPosts, interval } = Astro.props;
+
+// 从站点配置读取 homeSpotlight（总开关 / 轮换间隔 / wander 子配置）
+const spotlight = siteConfig.homeSpotlight;
+const wander = spotlight?.wander;
+
+const hasPins = pinnedPosts.length > 0;
+// wander 以配置开关为准，且随机池为空时按钮无意义，一并视为关闭
+const showWander = (wander?.enable ?? true) && wanderPosts.length > 0;
+// 空状态：总开关关闭，或无置顶且随便逛逛不可用 → 整块不渲染
+const shouldRender = (spotlight?.enable ?? true) && (hasPins || showWander);
+
+// 自动轮换间隔：props 优先，其次配置，默认 4200（脚本内再钳制下限 1200）
+const autoInterval = interval ?? spotlight?.interval ?? 4200;
+---
+
+{shouldRender && (
+	<>
+		{/* 桌面端：随便逛逛岛屿 + 置顶堆叠；≤768px 整块隐藏（随便逛逛移动端不显示） */}
+		<section
+			class:list={[
+				"home-desktop-spotlight is-spotlight-visible",
+				{ "is-wander-only": !hasPins, "is-pins-only": !showWander },
+			]}
+			data-interval={autoInterval}
+			aria-label="置顶文章"
+		>
+			{showWander && (
+				<div class="home-desktop-spotlight__random">
+					<RandomPostWander
+						client:load
+						posts={wanderPosts}
+						title={wander?.title || ""}
+						desc={wander?.desc}
+						faceCount={wander?.faceCount}
+						spinMs={wander?.spinMs}
+						easeMs={wander?.easeMs}
+						holdMs={wander?.holdMs}
+						icons={wander?.icons}
+						expanded={!hasPins}
+					/>
+				</div>
+			)}
+			{hasPins && (
+				<div class="home-desktop-spotlight__pins" aria-label="置顶文章">
+					<div class="home-desktop-spotlight__stack" data-spotlight-stack>
+						{pinnedPosts.map((post, index) => (
+							<a
+								class:list={[
+									"home-spotlight-card home-desktop-spotlight__card home-spotlight-stack__card",
+									{ "is-front": index === 0 },
+								]}
+								href={post.url}
+								aria-label={`阅读全文：${post.title}`}
+								tabindex={index === 0 ? undefined : "-1"}
+								aria-hidden={index === 0 ? undefined : "true"}
+							>
+								<span class="post-pin" title="置顶" aria-label="置顶">
+									<Icon name="mdi:paperclip" aria-hidden="true" />
+								</span>
+								<div class="home-spotlight-card__cover">
+									{post.cover && (
+										<img
+											src={post.cover}
+											alt={post.title}
+											loading="lazy"
+											decoding="async"
+										/>
+									)}
+								</div>
+								<div class="home-spotlight-card__body">
+									<h3 class="home-spotlight-card__title">{post.title}</h3>
+									{post.description && (
+										<p class="home-spotlight-card__excerpt">{post.description}</p>
+									)}
+									<div class="home-spotlight-card__meta">
+										{post.category && (
+											<span class="home-spotlight-card__category">
+												<Icon name="mdi:folder-outline" aria-hidden="true" />
+												<span>{post.category}</span>
+											</span>
+										)}
+										<time class="home-spotlight-card__date" datetime={post.date}>
+											{post.date}
+										</time>
+									</div>
+								</div>
+							</a>
+						))}
+					</div>
+					{/* prev/next：hover 置顶区时浮现，点击切换并停止自动轮换 */}
+					<div class="home-desktop-spotlight__navs">
+						<button
+							type="button"
+							class="home-desktop-spotlight__nav home-desktop-spotlight__nav--prev"
+							data-spotlight-prev
+							aria-label="上一篇置顶"
+						>
+							<Icon name="mdi:chevron-left" aria-hidden="true" />
+						</button>
+						<button
+							type="button"
+							class="home-desktop-spotlight__nav home-desktop-spotlight__nav--next"
+							data-spotlight-next
+							aria-label="下一篇置顶"
+						>
+							<Icon name="mdi:chevron-right" aria-hidden="true" />
+						</button>
+					</div>
+				</div>
+			)}
+		</section>
+
+		{/* 移动端：仅置顶堆叠（简化横向卡），桌面端隐藏 */}
+		{hasPins && (
+			<section
+				class="home-mobile-spotlight is-spotlight-visible"
+				data-interval={autoInterval}
+				aria-label="置顶文章"
+			>
+				<div class="home-mobile-spotlight__pins">
+					<div class="home-mobile-spotlight__stack" data-spotlight-stack>
+						{pinnedPosts.map((post, index) => (
+							<a
+								class:list={[
+									"home-spotlight-card home-mobile-spotlight__card home-spotlight-stack__card",
+									{ "is-front": index === 0 },
+								]}
+								href={post.url}
+								aria-label={`阅读全文：${post.title}`}
+								tabindex={index === 0 ? undefined : "-1"}
+								aria-hidden={index === 0 ? undefined : "true"}
+							>
+								<span class="post-pin" title="置顶" aria-label="置顶">
+									<Icon name="mdi:paperclip" aria-hidden="true" />
+								</span>
+								<div class="home-spotlight-card__cover">
+									{post.cover && (
+										<img
+											src={post.cover}
+											alt={post.title}
+											loading={index === 0 ? "eager" : "lazy"}
+											decoding="async"
+											fetchpriority={index === 0 ? "high" : undefined}
+										/>
+									)}
+								</div>
+								<div class="home-spotlight-card__body">
+									<h3 class="home-spotlight-card__title">{post.title}</h3>
+									{post.description && (
+										<p class="home-spotlight-card__excerpt">{post.description}</p>
+									)}
+									<div class="home-spotlight-card__meta">
+										{post.category && (
+											<span class="home-spotlight-card__category">
+												<Icon name="mdi:folder-outline" aria-hidden="true" />
+												<span>{post.category}</span>
+											</span>
+										)}
+										<time class="home-spotlight-card__date" datetime={post.date}>
+											{post.date}
+										</time>
+									</div>
+								</div>
+							</a>
+						))}
+					</div>
+				</div>
+			</section>
+		)}
+	</>
+)}
+
+<style>
+	/* ===== 桌面端与移动端 section 互斥显隐 ===== */
+	.home-desktop-spotlight,
+	.home-mobile-spotlight {
+		display: none;
+	}
+
+	/* ===== 堆叠卡片内容（桌面/移动共用同一套标记） ===== */
+	.home-spotlight-card__cover {
+		flex: none;
+		min-width: 0;
+		overflow: hidden;
+		/* 无图占位：主题色淡染渐变底 */
+		background: linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--primary) 16%, var(--card-bg)),
+			color-mix(in srgb, var(--primary) 5%, var(--card-bg))
+		);
+	}
+
+	.home-spotlight-card__cover img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+	}
+
+	.home-spotlight-card__body {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.home-spotlight-card__title {
+		display: -webkit-box;
+		margin: 0;
+		overflow: hidden;
+		color: var(--deep-text);
+		font-weight: 650;
+		line-height: 1.3;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 1;
+		line-clamp: 1;
+	}
+
+	/* 暗色下 --deep-text 仍为深色，需覆盖为亮色文字 */
+	:global(.dark) .home-spotlight-card__title {
+		color: var(--btn-content);
+	}
+
+	.home-spotlight-card__excerpt {
+		display: -webkit-box;
+		margin: 0;
+		overflow: hidden;
+		color: var(--content-meta);
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+	}
+
+	.home-spotlight-card__meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		min-width: 0;
+		/* 摘要与 meta 之间的剩余空间被压缩，meta 固定在卡片底部 */
+		margin-top: auto;
+		color: var(--content-meta);
+		white-space: nowrap;
+	}
+
+	.home-spotlight-card__category {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.home-spotlight-card__category :global(svg) {
+		flex-shrink: 0;
+		width: 0.875em;
+		height: 0.875em;
+		color: var(--primary);
+	}
+
+	.home-spotlight-card__date {
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+
+	/* 置顶图钉徽标：右上角旋转 24° */
+	.post-pin {
+		position: absolute;
+		top: 8px;
+		right: 10px;
+		z-index: 4;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		margin: 0;
+		color: var(--primary);
+		transform: rotate(24deg);
+		pointer-events: none;
+	}
+
+	.post-pin :global(svg) {
+		width: 16px;
+		height: 16px;
+		transform: scaleX(-1);
+	}
+
+	/* ===== 桌面端（≥769px）：3.5fr 随便逛逛 + 6.5fr 置顶堆叠 ===== */
+	@media (min-width: 769px) {
+		.home-desktop-spotlight {
+			--spotlight-height: 148px;
+			display: grid;
+			grid-template-columns: minmax(0, 3.5fr) minmax(0, 6.5fr);
+			gap: 10px;
+			align-items: stretch;
+			box-sizing: border-box;
+			width: 100%;
+			margin: 0;
+			/* 底部留白承接后层卡片向下的位移 */
+			padding: 2px 0 10px;
+			contain: layout style;
+		}
+
+		/* 仅随便逛逛或仅置顶堆叠时单列占满整行 */
+		.home-desktop-spotlight.is-wander-only,
+		.home-desktop-spotlight.is-pins-only {
+			grid-template-columns: 1fr;
+		}
+
+		/* 左列随便逛逛岛屿：容器定高与堆叠区对齐，按钮根元素撑满 */
+		.home-desktop-spotlight__random {
+			position: relative;
+			min-width: 0;
+			height: var(--spotlight-height);
+		}
+
+		.home-desktop-spotlight__pins {
+			position: relative;
+			min-width: 0;
+		}
+
+		/* 堆叠容器：透视 + preserve-3d，让卡片 translateZ 产生近大远小 */
+		.home-desktop-spotlight__stack {
+			position: relative;
+			width: 100%;
+			height: var(--spotlight-height);
+			perspective: 900px;
+			transform-style: preserve-3d;
+		}
+
+		/* 横向卡：封面左 42% / 内容右 58% */
+		.home-desktop-spotlight__card {
+			position: absolute;
+			inset: 0;
+			display: grid;
+			grid-template-columns: 42fr 58fr;
+			grid-template-rows: minmax(0, 1fr);
+			min-width: 0;
+			overflow: hidden;
+			color: inherit;
+			text-decoration: none;
+			border: 1px solid
+				color-mix(in srgb, var(--primary) 18%, var(--line-color));
+			border-radius: var(--radius-large);
+			background: var(--card-bg);
+			box-shadow: 0 10px 22px rgb(0 0 0 / 10%);
+			transform-origin: center bottom;
+			/* z-index 延迟 0.2s 切换，让上升的卡先从下层滑入 */
+			transition:
+				transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+				opacity 0.35s ease,
+				box-shadow 0.35s ease,
+				z-index 0s linear 0.2s;
+		}
+
+		.home-desktop-spotlight__card:hover {
+			transform: translate3d(0, 0, 0) rotate(0) scale(1);
+			border-color: color-mix(in srgb, var(--primary) 32%, var(--line-color));
+			box-shadow: 0 14px 28px rgb(0 0 0 / 14%);
+		}
+
+		.home-desktop-spotlight__card:hover .home-spotlight-card__title {
+			color: var(--primary);
+		}
+
+		.home-desktop-spotlight__card .home-spotlight-card__cover {
+			height: 100%;
+			align-self: stretch;
+		}
+
+		.home-desktop-spotlight__card .home-spotlight-card__body {
+			height: 100%;
+			padding: 16px 14px 12px;
+		}
+
+		.home-desktop-spotlight__card .home-spotlight-card__title {
+			/* 避让右上角图钉 */
+			padding-right: 1.4rem;
+			font-size: 1.125rem;
+		}
+
+		.home-desktop-spotlight__card .home-spotlight-card__excerpt {
+			margin: 4px 0 0;
+			font-size: 0.875rem;
+			line-height: 1.4;
+		}
+
+		.home-desktop-spotlight__card .home-spotlight-card__meta {
+			font-size: 0.6875rem;
+			line-height: 1.2;
+		}
+
+		/* 堆叠四态：front 正常 / mid 中层 / back 后层 / hidden 收起 */
+		.home-desktop-spotlight__card.is-front {
+			z-index: 3;
+			opacity: 1;
+			transform: translate3d(0, 0, 0) rotate(0) scale(1);
+			box-shadow: 0 14px 28px rgb(0 0 0 / 14%);
+			pointer-events: auto;
+		}
+
+		.home-desktop-spotlight__card.is-mid {
+			z-index: 2;
+			opacity: 0.94;
+			transform: translate3d(5px, 4px, -12px) rotate(1.4deg) scale(0.985);
+			pointer-events: none;
+		}
+
+		.home-desktop-spotlight__card.is-back {
+			z-index: 1;
+			opacity: 0.84;
+			transform: translate3d(-5px, 7px, -24px) rotate(-1.8deg) scale(0.97);
+			pointer-events: none;
+		}
+
+		.home-desktop-spotlight__card.is-hidden {
+			z-index: 0;
+			opacity: 0;
+			visibility: hidden;
+			transform: translate3d(0, 10px, -36px) scale(0.95);
+			pointer-events: none;
+		}
+
+		/* 不在视口时禁用过渡，避免初始化/滚入时整叠闪动 */
+		.home-desktop-spotlight:not(.is-spotlight-visible)
+			.home-desktop-spotlight__card {
+			transition: none;
+		}
+
+		/* 单卡时用伪元素补出中/后两层空卡 */
+		.home-desktop-spotlight__stack:has(
+				> .home-desktop-spotlight__card:only-child
+			)::before,
+		.home-desktop-spotlight__stack:has(
+				> .home-desktop-spotlight__card:only-child
+			)::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border: 1px solid color-mix(in srgb, var(--line-color) 70%, transparent);
+			border-radius: var(--radius-large);
+			background: var(--card-bg);
+			box-shadow: 0 4px 14px rgb(0 0 0 / 6%);
+			pointer-events: none;
+		}
+
+		.home-desktop-spotlight__stack:has(
+				> .home-desktop-spotlight__card:only-child
+			)::before {
+			z-index: 1;
+			opacity: 0.9;
+			transform: translate3d(5px, 4px, -12px) rotate(1.4deg) scale(0.985);
+		}
+
+		.home-desktop-spotlight__stack:has(
+				> .home-desktop-spotlight__card:only-child
+			)::after {
+			z-index: 0;
+			opacity: 0.72;
+			transform: translate3d(-5px, 7px, -24px) rotate(-1.8deg) scale(0.97);
+		}
+
+		.home-desktop-spotlight__stack:has(> .home-desktop-spotlight__card:only-child)
+			> .home-desktop-spotlight__card {
+			z-index: 3;
+		}
+
+		/* prev/next 圆形切换按钮：hover / focus-within 置顶区时浮现 */
+		.home-desktop-spotlight__navs {
+			position: absolute;
+			inset: 0;
+			z-index: 8;
+			pointer-events: none;
+		}
+
+		.home-desktop-spotlight__nav {
+			position: absolute;
+			top: 50%;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			padding: 0;
+			border: 1px solid color-mix(in srgb, var(--deep-text) 12%, transparent);
+			border-radius: 50%;
+			background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+			color: var(--deep-text);
+			cursor: pointer;
+			opacity: 0;
+			pointer-events: none;
+			box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
+			transform: translateY(-50%);
+			transition:
+				opacity 0.2s ease,
+				color 0.2s ease,
+				background 0.2s ease,
+				border-color 0.2s ease;
+		}
+
+		.home-desktop-spotlight__nav :global(svg) {
+			width: 1.25rem;
+			height: 1.25rem;
+			pointer-events: none;
+		}
+
+		/* 暗色下 --deep-text 仍为深色，按钮文字与边框需覆盖为亮色（置于 :hover 规则前，保证 hover 变色仍生效） */
+		:global(.dark) .home-desktop-spotlight__nav {
+			color: var(--btn-content);
+			border-color: var(--line-color);
+		}
+
+		.home-desktop-spotlight__nav--prev {
+			left: 10px;
+		}
+
+		.home-desktop-spotlight__nav--next {
+			right: 10px;
+		}
+
+		.home-desktop-spotlight__pins:hover .home-desktop-spotlight__nav,
+		.home-desktop-spotlight__pins:focus-within .home-desktop-spotlight__nav {
+			opacity: 1;
+			pointer-events: auto;
+		}
+
+		.home-desktop-spotlight__nav:hover {
+			color: var(--primary);
+			border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+		}
+
+		.home-desktop-spotlight__nav:focus-visible {
+			opacity: 1;
+			pointer-events: auto;
+			outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
+			outline-offset: 2px;
+		}
+	}
+
+	/* 触屏设备无 hover，隐藏 nav 按钮（与参考站一致） */
+	@media (min-width: 769px) and (hover: none) {
+		.home-desktop-spotlight__navs {
+			display: none;
+		}
+	}
+
+	/* ===== 移动端（≤768px）：仅置顶堆叠，卡片高约 128px ===== */
+	@media (max-width: 768px) {
+		.home-mobile-spotlight {
+			display: block;
+			width: 100%;
+			box-sizing: border-box;
+			margin: 0 0 16px;
+		}
+
+		.home-mobile-spotlight__pins {
+			width: 100%;
+			min-width: 0;
+			/* 承接后层卡片向下的位移 */
+			padding-bottom: 6px;
+		}
+
+		.home-mobile-spotlight__stack {
+			position: relative;
+			width: 100%;
+			height: 128px;
+			perspective: 900px;
+			transform-style: preserve-3d;
+			/* 纵向滚动照常，横向滑动由脚本接管 */
+			touch-action: pan-y pinch-zoom;
+		}
+
+		.home-mobile-spotlight__card {
+			position: absolute;
+			inset: 0;
+			display: grid;
+			grid-template-columns: 42fr 58fr;
+			grid-template-rows: minmax(0, 1fr);
+			min-width: 0;
+			overflow: hidden;
+			color: inherit;
+			text-decoration: none;
+			border: 1px solid
+				color-mix(in srgb, var(--primary) 18%, var(--line-color));
+			border-radius: var(--radius-lg, 8px);
+			background: var(--card-bg);
+			box-shadow:
+				0 6px 20px rgb(0 0 0 / 9%),
+				0 2px 6px rgb(0 0 0 / 5%);
+			transform-origin: center bottom;
+			transition:
+				transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+				opacity 0.35s ease,
+				z-index 0s linear 0.2s;
+		}
+
+		.home-mobile-spotlight__card .home-spotlight-card__cover {
+			height: 100%;
+			align-self: stretch;
+		}
+
+		.home-mobile-spotlight__card .home-spotlight-card__body {
+			height: 100%;
+			padding: 10px 12px;
+		}
+
+		.home-mobile-spotlight__card .home-spotlight-card__title {
+			/* 避让右上角图钉 */
+			padding-right: 1.4rem;
+			font-size: 0.8125rem;
+		}
+
+		.home-mobile-spotlight__card .home-spotlight-card__excerpt {
+			margin: 2px 0 0;
+			font-size: 0.6875rem;
+			line-height: 1.3;
+			-webkit-line-clamp: 1;
+			line-clamp: 1;
+		}
+
+		.home-mobile-spotlight__card .home-spotlight-card__meta {
+			font-size: 0.625rem;
+			line-height: 1.2;
+		}
+
+		.home-mobile-spotlight__card .post-pin {
+			width: 18px;
+			height: 18px;
+		}
+
+		.home-mobile-spotlight__card .post-pin :global(svg) {
+			width: 13px;
+			height: 13px;
+		}
+
+		/* 移动端堆叠四态（位移与旋转比桌面端更夸张） */
+		.home-mobile-spotlight__card.is-front {
+			z-index: 3;
+			opacity: 1;
+			transform: translate3d(0, 0, 0) rotate(0) scale(1);
+			pointer-events: auto;
+		}
+
+		.home-mobile-spotlight__card.is-mid {
+			z-index: 2;
+			opacity: 0.92;
+			transform: translate3d(8px, 7px, -24px) rotate(3.5deg) scale(0.965);
+			pointer-events: none;
+		}
+
+		.home-mobile-spotlight__card.is-back {
+			z-index: 1;
+			opacity: 0.78;
+			transform: translate3d(-8px, 12px, -48px) rotate(-4.5deg) scale(0.93);
+			pointer-events: none;
+		}
+
+		.home-mobile-spotlight__card.is-hidden {
+			z-index: 0;
+			opacity: 0;
+			transform: translate3d(0, 18px, -72px) scale(0.9);
+			pointer-events: none;
+		}
+
+		.home-mobile-spotlight:not(.is-spotlight-visible)
+			.home-mobile-spotlight__card {
+			transition: none;
+		}
+
+		/* 单卡时伪元素补出中/后两层空卡 */
+		.home-mobile-spotlight__stack:has(
+				> .home-mobile-spotlight__card:only-child
+			)::before,
+		.home-mobile-spotlight__stack:has(
+				> .home-mobile-spotlight__card:only-child
+			)::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border: 1px solid color-mix(in srgb, var(--line-color) 65%, transparent);
+			border-radius: var(--radius-lg, 8px);
+			background: var(--card-bg);
+			box-shadow: 0 4px 14px rgb(0 0 0 / 6%);
+			pointer-events: none;
+		}
+
+		.home-mobile-spotlight__stack:has(
+				> .home-mobile-spotlight__card:only-child
+			)::before {
+			z-index: 1;
+			opacity: 0.9;
+			transform: translate3d(8px, 7px, -24px) rotate(3.5deg) scale(0.965);
+		}
+
+		.home-mobile-spotlight__stack:has(
+				> .home-mobile-spotlight__card:only-child
+			)::after {
+			z-index: 0;
+			opacity: 0.72;
+			transform: translate3d(-8px, 12px, -48px) rotate(-4.5deg) scale(0.93);
+		}
+
+		.home-mobile-spotlight__stack:has(> .home-mobile-spotlight__card:only-child)
+			> .home-mobile-spotlight__card {
+			z-index: 3;
+		}
+	}
+
+	/* 减少动效偏好：关闭堆叠过渡（脚本侧也不会启动自动轮换） */
+	@media (prefers-reduced-motion: reduce) {
+		.home-desktop-spotlight__card,
+		.home-mobile-spotlight__card {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	// 首页置顶堆叠交互：完整移植参考站 spotlight-stack 的 Af/Sf 逻辑。
+	// 模块脚本整站只执行一次，swup 切页后由 astro:page-load 重新初始化；
+	// 记录上一轮的清理函数，重复触发时先解绑，避免全局监听越积越多。
+	let cleanup: (() => void) | undefined;
+
+	// 类轮换（参考站 Af）：按 (index - current + n) % n 为每张卡分配
+	// front / mid / back / hidden 四态，并同步 tabindex / aria-hidden
+	function applyStackState(cards: HTMLElement[], current: number): void {
+		const total = cards.length;
+		cards.forEach((card, index) => {
+			const offset = (index - current + total) % total;
+			card.classList.remove("is-front", "is-mid", "is-back", "is-hidden");
+			if (offset === 0) {
+				card.classList.add("is-front");
+				card.removeAttribute("tabindex");
+				card.removeAttribute("aria-hidden");
+				return;
+			}
+			card.setAttribute("tabindex", "-1");
+			card.setAttribute("aria-hidden", "true");
+			if (offset === 1 && total > 1) {
+				card.classList.add("is-mid");
+			} else if (offset === 2 && total > 2) {
+				card.classList.add("is-back");
+			} else {
+				card.classList.add("is-hidden");
+			}
+		});
+	}
+
+	function initHomeSpotlight(): void {
+		cleanup?.();
+		cleanup = undefined;
+
+		// 桌面 / 移动两个 section 独立实例化（与参考站选择器一致）
+		const sections = [
+			...document.querySelectorAll<HTMLElement>(
+				".home-mobile-spotlight, .home-desktop-spotlight",
+			),
+		];
+		if (!sections.length) return;
+
+		const disposers: (() => void)[] = [];
+		const reducedMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		).matches;
+
+		sections.forEach((section) => {
+			const stack = section.querySelector<HTMLElement>("[data-spotlight-stack]");
+			const cards = stack
+				? [...stack.querySelectorAll<HTMLElement>(".home-spotlight-stack__card")]
+				: [];
+			let current = 0;
+			let timer: number | null = null;
+			let inViewport = true;
+			const multi = cards.length >= 2;
+			// 轮换间隔下限 1200ms，默认 4200ms
+			const interval = Math.max(1200, Number(section.dataset.interval) || 4200);
+
+			const applyState = (index: number): void => {
+				if (!cards.length) return;
+				current = ((index % cards.length) + cards.length) % cards.length;
+				applyStackState(cards, current);
+			};
+
+			const step = (delta: number): void => {
+				if (!multi) return;
+				applyState(current + delta);
+			};
+
+			const stopAuto = (): void => {
+				if (timer !== null) {
+					window.clearInterval(timer);
+					timer = null;
+				}
+			};
+
+			const startAuto = (): void => {
+				if (!multi || reducedMotion || timer !== null || !inViewport) return;
+				// hover 容器期间不启动（由 mouseleave 再触发）
+				if (section.matches(":hover")) return;
+				timer = window.setInterval(() => {
+					if (document.hidden || !inViewport) return;
+					if (!section.isConnected) {
+						stopAuto();
+						return;
+					}
+					step(1);
+				}, interval);
+			};
+
+			// 视口可见性（参考站 u）：is-spotlight-visible 同时控制过渡开关
+			const setViewport = (visible: boolean): void => {
+				inViewport = visible;
+				const active = visible && !document.hidden;
+				section.classList.toggle("is-spotlight-visible", active);
+				if (active) {
+					startAuto();
+				} else {
+					stopAuto();
+				}
+			};
+
+			// 初始状态：SSR 首卡已带 is-front，这里重新分配一遍
+			if (cards.length) {
+				const frontIndex = cards.findIndex((card) =>
+					card.classList.contains("is-front"),
+				);
+				current = frontIndex < 0 ? 0 : frontIndex;
+				applyState(current);
+			}
+
+			// 离开视口（rootMargin 64px / threshold 0.08）暂停；不可用则视为可见
+			if ("IntersectionObserver" in window) {
+				const observer = new IntersectionObserver(
+					(entries) => setViewport(entries.some((entry) => entry.isIntersecting)),
+					{ root: null, rootMargin: "64px 0px", threshold: 0.08 },
+				);
+				observer.observe(section);
+				setViewport(true);
+				disposers.push(() => {
+					observer.disconnect();
+					section.classList.remove("is-spotlight-visible");
+				});
+			} else {
+				setViewport(true);
+			}
+
+			// 标签页隐藏时暂停
+			const onVisibilityChange = (): void => setViewport(inViewport);
+			document.addEventListener("visibilitychange", onVisibilityChange);
+			disposers.push(() =>
+				document.removeEventListener("visibilitychange", onVisibilityChange),
+			);
+
+			if (!multi) return;
+
+			// hover 容器暂停自动轮换
+			const onMouseEnter = (): void => stopAuto();
+			const onMouseLeave = (): void => startAuto();
+			section.addEventListener("mouseenter", onMouseEnter);
+			section.addEventListener("mouseleave", onMouseLeave);
+			disposers.push(() => {
+				section.removeEventListener("mouseenter", onMouseEnter);
+				section.removeEventListener("mouseleave", onMouseLeave);
+			});
+
+			if (!reducedMotion) {
+				startAuto();
+				disposers.push(stopAuto);
+			}
+
+			// 桌面端 prev/next：切换后停止自动轮换
+			if (section.classList.contains("home-desktop-spotlight")) {
+				const prev = section.querySelector<HTMLButtonElement>(
+					"[data-spotlight-prev]",
+				);
+				const next = section.querySelector<HTMLButtonElement>(
+					"[data-spotlight-next]",
+				);
+				if (prev && next) {
+					const onPrev = (event: MouseEvent): void => {
+						event.preventDefault();
+						event.stopPropagation();
+						step(-1);
+						stopAuto();
+					};
+					const onNext = (event: MouseEvent): void => {
+						event.preventDefault();
+						event.stopPropagation();
+						step(1);
+						stopAuto();
+					};
+					prev.addEventListener("click", onPrev);
+					next.addEventListener("click", onNext);
+					disposers.push(() => {
+						prev.removeEventListener("click", onPrev);
+						next.removeEventListener("click", onNext);
+					});
+				}
+			}
+
+			// 移动端触摸滑动：水平位移 ≥36px 切换、320ms 内忽略连续滑动、x/y 主轴判定
+			if (section.classList.contains("home-mobile-spotlight") && stack) {
+				const stackEl = stack;
+				let startX = 0;
+				let startY = 0;
+				let locked = false;
+				let axis: "x" | "y" | null = null;
+				const threshold = 36;
+
+				const onTouchStart = (event: TouchEvent): void => {
+					if (event.touches.length !== 1) return;
+					const touch = event.touches.item(0);
+					if (!touch) return;
+					startX = touch.clientX;
+					startY = touch.clientY;
+					locked = false;
+					axis = null;
+					stopAuto();
+				};
+
+				const onTouchMove = (event: TouchEvent): void => {
+					if (event.touches.length !== 1 || locked) return;
+					const touch = event.touches.item(0);
+					if (!touch) return;
+					const deltaX = touch.clientX - startX;
+					const deltaY = touch.clientY - startY;
+					if (axis === null) {
+						if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) return;
+						axis = Math.abs(deltaX) > Math.abs(deltaY) * 1.2 ? "x" : "y";
+					}
+					// 判定为横向滑动时阻止默认行为，避免与纵向滚动竞争
+					if (axis === "x") event.preventDefault();
+				};
+
+				const onTouchEnd = (event: TouchEvent): void => {
+					if (locked) return;
+					const touch = event.changedTouches.item(0);
+					if (!touch) {
+						if (!reducedMotion) startAuto();
+						axis = null;
+						return;
+					}
+					const deltaX = touch.clientX - startX;
+					const deltaY = touch.clientY - startY;
+					const absX = Math.abs(deltaX);
+					const horizontal =
+						axis === "x" ||
+						(axis === null && absX >= threshold && absX > Math.abs(deltaY) * 1.2);
+					if (horizontal && absX >= threshold) {
+						locked = true;
+						step(deltaX < 0 ? 1 : -1);
+						window.setTimeout(() => {
+							locked = false;
+						}, 320);
+					}
+					axis = null;
+					if (!reducedMotion) window.setTimeout(startAuto, interval);
+				};
+
+				stackEl.addEventListener("touchstart", onTouchStart, { passive: true });
+				stackEl.addEventListener("touchmove", onTouchMove, { passive: false });
+				stackEl.addEventListener("touchend", onTouchEnd, { passive: true });
+				stackEl.addEventListener("touchcancel", onTouchEnd, { passive: true });
+				disposers.push(() => {
+					stackEl.removeEventListener("touchstart", onTouchStart);
+					stackEl.removeEventListener("touchmove", onTouchMove);
+					stackEl.removeEventListener("touchend", onTouchEnd);
+					stackEl.removeEventListener("touchcancel", onTouchEnd);
+				});
+			}
+		});
+
+		if (!disposers.length) return;
+		cleanup = () => {
+			disposers.forEach((dispose) => dispose());
+		};
+	}
+
+	// 模块脚本按 defer 语义执行，首屏 DOM 已就绪；切页后 astro:page-load 再走同一入口
+	initHomeSpotlight();
+	document.addEventListener("astro:page-load", initHomeSpotlight);
+</script>

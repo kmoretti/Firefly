@@ -149,6 +149,30 @@ export type SiteConfig = {
 		};
 	};
 
+	// 首页置顶堆叠 + 随便逛逛配置
+	homeSpotlight?: {
+		enable: boolean; // 总开关：置顶堆叠与随便逛逛
+		interval: number; // 置顶堆叠自动轮换间隔（ms）
+		wander: {
+			enable: boolean; // 随便逛逛按钮开关
+			title: string; // 按钮标题，空串回退站点标题
+			desc: string; // 副文案
+			faceCount: number; // 转盘面数
+			spinMs: number; // 旋转时长（ms）
+			easeMs: number; // 缓动时长（ms）
+			holdMs: number; // 定格后停留时长（ms）
+			icons: [string, string][]; // 图标墙 [iconify图标名, 背景色]
+		};
+	};
+
+	// 首页推荐文章轮播配置
+	homeFeatured?: {
+		enable: boolean; // 轮播开关
+		title: string; // 标题文案
+		visibleCount: number; // 桌面端可见卡片数
+		maxCount: number; // 最多展示文章数
+	};
+
 	// 文章内容页配置
 	post: {
 		// 提醒框（Admonitions）配置

@@ -1,0 +1,222 @@
+---
+import { Icon } from "astro-icon/components";
+import { externalLinkConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { url } from "@/utils/url-utils";
+
+const goTexts = {
+	goAutoJump: i18n(I18nKey.goAutoJump),
+	goInvalidLink: i18n(I18nKey.goInvalidLink),
+	goJumpNow: i18n(I18nKey.goJumpNow),
+};
+---
+
+<MainGridLayout title={i18n(I18nKey.goPageTitle)} description={i18n(I18nKey.goPageDescription)}>
+	<!-- 外链中转页无独立内容价值，禁止被搜索引擎收录 -->
+	<meta slot="head" name="robots" content="noindex" />
+
+	<div class="flex w-full rounded-(--radius-large) overflow-hidden relative">
+		<div class="card-base z-10 relative w-full flex flex-col items-center justify-center text-center px-6 py-10 sm:px-9 sm:py-12">
+			<!-- 图标 -->
+			<div class="mb-6">
+				<Icon name="material-symbols:open-in-new" class="text-6xl text-(--primary)" />
+			</div>
+
+			<!-- 标题 -->
+			<div class="text-3xl md:text-4xl font-bold mb-4 text-90">
+				{i18n(I18nKey.goPageTitle)}
+			</div>
+
+			<!-- 提示 -->
+			<p class="text-lg text-75 mb-8 max-w-md">
+				{i18n(I18nKey.goLeaveText)}
+			</p>
+
+			<!-- 无效状态区：默认隐藏，脚本在链接非法时显示 -->
+			<div id="go-invalid" class="hidden w-full flex-col items-center gap-3 mb-8" role="alert">
+				<Icon name="material-symbols:error-outline" class="text-5xl text-(--primary)" />
+				<p class="text-lg font-bold text-90">
+					{i18n(I18nKey.goInvalidLink)}
+				</p>
+			</div>
+
+			<!-- 目标链接展示区：默认隐藏，脚本解析成功后显示 -->
+			<div id="go-link-section" class="hidden w-full flex-col items-center gap-5 mb-8">
+				<p id="go-countdown-section" class="flex items-baseline gap-2 text-base text-75">
+					{i18n(I18nKey.goAutoJump)}
+					<span id="go-countdown" class="text-5xl font-bold text-(--primary) tabular-nums">–</span>
+				</p>
+				<a
+					id="go-target-link"
+					href="#"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-block max-w-full break-all text-sm text-75 underline decoration-dotted underline-offset-4 hover:text-(--primary) transition-colors duration-200"
+				></a>
+			</div>
+
+			<!-- 安全提醒 -->
+			<p class="text-xs text-50 mb-8 max-w-md leading-relaxed">
+				{i18n(I18nKey.goWarning)}
+			</p>
+
+			<!-- 立即前往按钮：默认隐藏，脚本解析成功后显示 -->
+			<button
+				id="go-jump-btn"
+				type="button"
+				class="hidden items-center gap-2 px-6 py-3 bg-(--primary) text-white rounded-(--radius-large) hover:bg-(--btn-content) transition-colors duration-200 font-medium cursor-pointer"
+			>
+				<Icon name="material-symbols:open-in-new" class="text-xl" />
+				{i18n(I18nKey.goJumpNow)}
+			</button>
+
+			<!-- 返回来源页（同源 referrer / 浏览器后退），兜底首页 -->
+			<a
+				id="go-back-link"
+				href={url("/")}
+				class="mt-6 inline-flex items-center gap-2 text-75 hover:text-(--primary) transition-colors duration-200"
+			>
+				<Icon name="material-symbols:arrow-back" class="text-lg" />
+				{i18n(I18nKey.goBack)}
+			</a>
+		</div>
+	</div>
+</MainGridLayout>
+
+<script is:inline define:vars={{ countdownSeconds: externalLinkConfig.countdownSeconds, texts: goTexts }}>
+	(function () {
+		const invalidEl = document.getElementById("go-invalid");
+		const linkSectionEl = document.getElementById("go-link-section");
+		const countdownSectionEl = document.getElementById("go-countdown-section");
+		const countdownEl = document.getElementById("go-countdown");
+		const targetLinkEl = document.getElementById("go-target-link");
+		const jumpBtnEl = document.getElementById("go-jump-btn");
+		const backLinkEl = document.getElementById("go-back-link");
+
+		if (
+			!invalidEl ||
+			!linkSectionEl ||
+			!countdownSectionEl ||
+			!countdownEl ||
+			!targetLinkEl ||
+			!jumpBtnEl ||
+			!backLinkEl
+		) {
+			return;
+		}
+
+		let timer = null;
+		let targetUrl = null;
+
+		// 返回来源页：同标签打开时用浏览器后退（恢复来源页原滚动位置）；
+		// 新标签打开时回落到同源 document.referrer（即点击外链的页面）；无法获取则保持首页兜底
+		(function setupBackLink() {
+			if (window.history.length > 1) {
+				backLinkEl.addEventListener("click", (event) => {
+					event.preventDefault();
+					window.history.back();
+				});
+				return;
+			}
+			try {
+				const referrerUrl = new URL(document.referrer);
+				if (
+					referrerUrl.origin === window.location.origin &&
+					referrerUrl.pathname !== window.location.pathname
+				) {
+					backLinkEl.href = referrerUrl.href;
+				}
+			} catch (_err) {
+				// referrer 缺失或非法时保持默认首页链接
+			}
+		})();
+
+		const show = (el) => {
+			el.classList.remove("hidden");
+		};
+
+		const showAsFlex = (el) => {
+			show(el);
+			el.classList.add("flex");
+		};
+
+		const showAsInlineFlex = (el) => {
+			show(el);
+			el.classList.add("inline-flex");
+		};
+
+		const hide = (el) => {
+			el.classList.add("hidden");
+		};
+
+		const jumpToTarget = () => {
+			if (timer !== null) {
+				window.clearInterval(timer);
+				timer = null;
+			}
+			if (targetUrl) {
+				window.location.href = targetUrl;
+			}
+		};
+
+		const showInvalid = () => {
+			showAsFlex(invalidEl);
+			hide(linkSectionEl);
+			hide(jumpBtnEl);
+		};
+
+		// 解析并校验 u 参数：base64 解码 → 还原 encodeURIComponent → URL 协议校验
+		try {
+			const encoded = new URLSearchParams(window.location.search).get("u");
+			if (!encoded) {
+				throw new Error("missing u param");
+			}
+			const rawUrl = decodeURIComponent(window.atob(encoded));
+			const parsed = new URL(rawUrl);
+			if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+				throw new Error("unsupported protocol");
+			}
+			targetUrl = rawUrl;
+		} catch (_err) {
+			targetUrl = null;
+			showInvalid();
+			return;
+		}
+
+		// 有效链接：展示完整目标 URL
+		targetLinkEl.textContent = targetUrl;
+		targetLinkEl.setAttribute("href", targetUrl);
+		targetLinkEl.setAttribute("aria-label", texts.goAutoJump + " " + targetUrl);
+		showAsFlex(linkSectionEl);
+
+		// 倒计时跳转
+		const remaining = Number(countdownSeconds);
+		if (Number.isFinite(remaining) && remaining > 0) {
+			let secondsLeft = remaining;
+			countdownEl.textContent = String(secondsLeft);
+			countdownEl.setAttribute("aria-live", "polite");
+			countdownEl.setAttribute("aria-label", texts.goAutoJump + " " + secondsLeft);
+			timer = window.setInterval(() => {
+				secondsLeft -= 1;
+				if (secondsLeft <= 0) {
+					jumpToTarget();
+					return;
+				}
+				countdownEl.textContent = String(secondsLeft);
+				countdownEl.setAttribute("aria-label", texts.goAutoJump + " " + secondsLeft);
+			}, 1000);
+		} else if (remaining === 0) {
+			jumpToTarget();
+			return;
+		} else {
+			// 负数或非法配置：隐藏倒计时区，只保留跳转按钮
+			hide(countdownSectionEl);
+		}
+
+		// 立即前往按钮
+		showAsInlineFlex(jumpBtnEl);
+		jumpBtnEl.addEventListener("click", jumpToTarget);
+	})();
+</script>

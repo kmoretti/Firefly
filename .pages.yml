@@ -15,7 +15,7 @@ content:
       template: "{primary}.md"
       field: true
     view:
-      fields: [title, published, draft, pinned]
+      fields: [title, published, draft, pinned, recommended]
       primary: title
       sort: [published, title]
       search: [title, description, tags, category]
@@ -60,6 +60,10 @@ content:
         type: string
       - name: pinned
         label: 置顶
+        type: boolean
+        default: false
+      - name: recommended
+        label: 推荐
         type: boolean
         default: false
       - name: author
@@ -104,7 +108,7 @@ content:
       template: "{primary}.mdx"
       field: true
     view:
-      fields: [title, published, draft, pinned]
+      fields: [title, published, draft, pinned, recommended]
       primary: title
       sort: [published, title]
       search: [title, description, tags, category]
@@ -149,6 +153,10 @@ content:
         type: string
       - name: pinned
         label: 置顶
+        type: boolean
+        default: false
+      - name: recommended
+        label: 推荐
         type: boolean
         default: false
       - name: author

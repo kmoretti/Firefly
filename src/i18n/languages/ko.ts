@@ -529,4 +529,16 @@ export const ko: Translation = {
 	[Key.exitImmersiveReading]: "몰입형 읽기 종료",
 	[Key.tocExpand]: "목차 펼치기",
 	[Key.tocCollapse]: "목차 접기",
+
+	// 외부 링크 전환 페이지
+	[Key.goPageTitle]: "이 사이트를 떠납니다",
+	[Key.goPageDescription]:
+		"게시글의 외부 링크는 안전 확인 페이지를 거칩니다. 계속하기 전에 링크가 안전한지 확인하세요.",
+	[Key.goLeaveText]: "이 사이트를 떠나 다음 링크로 이동합니다:",
+	[Key.goAutoJump]: "자동 이동까지",
+	[Key.goJumpNow]: "지금 이동",
+	[Key.goBackHome]: "홈으로 돌아가기",
+	[Key.goInvalidLink]: "링크가 유효하지 않거나 손상되어 이동할 수 없습니다",
+	[Key.goWarning]: "계속하기 전에 링크의 안전성을 직접 확인하세요",
+	[Key.goBack]: "뒤로",
 };

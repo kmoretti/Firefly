@@ -207,6 +207,57 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 
+	// ── 首页置顶堆叠 + 随便逛逛配置 ──────────────────────────────────
+	homeSpotlight: {
+		// 总开关：置顶堆叠与随便逛逛
+		enable: true,
+		// 置顶堆叠自动轮换间隔（毫秒）
+		interval: 4200,
+		wander: {
+			// 随便逛逛按钮开关
+			enable: true,
+			// 按钮标题，留空则使用站点标题
+			title: "喵洛阁",
+			// 副文案
+			desc: "看点什么好呢",
+			// 转盘面数（6-16）
+			faceCount: 10,
+			// 转盘旋转时长（毫秒）
+			spinMs: 1600,
+			// 转盘缓动时长（毫秒）
+			easeMs: 800,
+			// 定格后停留时长（毫秒）
+			holdMs: 700,
+			// 图标墙：[iconify 图标名, 背景色]，两列成对排列
+			icons: [
+				["simple-icons:github", "#358bff"],
+				["simple-icons:markdown", "#15c6ff"],
+				["simple-icons:typescript", "#3178c6"],
+				["simple-icons:css", "#2965f1"],
+				["simple-icons:python", "#3776ab"],
+				["simple-icons:vuedotjs", "#42b883"],
+				["simple-icons:hugo", "#ff4088"],
+				["simple-icons:nodedotjs", "#339933"],
+				["simple-icons:docker", "#2496ed"],
+				["simple-icons:cloudflare", "#f38020"],
+				["simple-icons:figma", "#a259ff"],
+				["simple-icons:astro", "#ff5d01"],
+			],
+		},
+	},
+
+	// ── 首页推荐文章轮播配置 ──────────────────────────────
+	homeFeatured: {
+		// 轮播开关
+		enable: true,
+		// 标题文案
+		title: "喜欢哪一篇推荐呢~",
+		// 桌面端同时可见卡片数
+		visibleCount: 4,
+		// 最多展示文章数
+		maxCount: 12,
+	},
+
 	// 分页配置
 	pagination: {
 		// 每页显示的文章数量

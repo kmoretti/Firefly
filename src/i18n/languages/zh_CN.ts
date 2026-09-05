@@ -519,4 +519,16 @@ export const zh_CN: Translation = {
 	[Key.exitImmersiveReading]: "退出沉浸阅读",
 	[Key.tocExpand]: "展开目录",
 	[Key.tocCollapse]: "折叠目录",
+
+	// 外链中转页
+	[Key.goPageTitle]: "即将离开本站",
+	[Key.goPageDescription]:
+		"本站文章中的外链会经过安全中转页，请确认目标链接可信后再继续访问。",
+	[Key.goLeaveText]: "您即将离开本站，跳转到：",
+	[Key.goAutoJump]: "自动跳转倒计时",
+	[Key.goJumpNow]: "立即前往",
+	[Key.goBackHome]: "返回首页",
+	[Key.goInvalidLink]: "链接无效或已损坏，无法跳转",
+	[Key.goWarning]: "请自行确认目标链接的安全性后再继续访问",
+	[Key.goBack]: "返回",
 };

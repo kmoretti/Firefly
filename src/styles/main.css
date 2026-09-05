@@ -55,6 +55,46 @@ html {
     scroll-behavior: smooth;
 }
 
+/* 自定义鼠标光标：只换默认箭头，交互元素保留系统光标反馈 */
+@layer base {
+    :root {
+        --cursor-default: url("/assets/images/default.cur"), auto;
+    }
+
+    * {
+        cursor: var(--cursor-default);
+    }
+
+    /* 可点击元素保留系统手型 */
+    a[href],
+    button,
+    [role="button"],
+    summary,
+    select,
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="submit"],
+    input[type="reset"],
+    input[type="button"],
+    label[for] {
+        cursor: pointer;
+    }
+
+    /* 文本输入类元素保留文本光标 */
+    input:not([type]),
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="number"],
+    textarea,
+    [contenteditable="true"] {
+        cursor: text;
+    }
+}
+
 /* 全站键盘焦点基线；组件可以在更高的层中覆盖间距或形态。 */
 @layer components {
     :where(

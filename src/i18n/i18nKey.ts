@@ -513,6 +513,17 @@ enum I18nKey {
 	exitImmersiveReading = "exitImmersiveReading",
 	tocExpand = "tocExpand",
 	tocCollapse = "tocCollapse",
+
+	// 外链中转页
+	goPageTitle = "goPageTitle",
+	goPageDescription = "goPageDescription",
+	goLeaveText = "goLeaveText",
+	goAutoJump = "goAutoJump",
+	goJumpNow = "goJumpNow",
+	goBackHome = "goBackHome",
+	goInvalidLink = "goInvalidLink",
+	goWarning = "goWarning",
+	goBack = "goBack",
 }
 
 export default I18nKey;

@@ -30,6 +30,7 @@ import {
 	commentConfig,
 	dynamicConfig,
 	expressiveCodeConfig,
+	externalLinkConfig,
 	fontConfig,
 	fontsList,
 	mermaidConfig,
@@ -315,7 +316,10 @@ export default defineConfig({
 					rehypeImageReferrerPolicy,
 					{ domains: siteConfig.imageOptimization?.noReferrerDomains || [] },
 				],
-				[rehypeExternalLinks, { siteUrl: siteConfig.site_url }],
+				[
+					rehypeExternalLinks,
+					{ siteUrl: siteConfig.site_url, config: externalLinkConfig },
+				],
 				[rehypeEmailProtection, { method: "base64" }], // 邮箱保护插件，支持 'base64' 或 'rot13'
 				[
 					rehypeComponents,
