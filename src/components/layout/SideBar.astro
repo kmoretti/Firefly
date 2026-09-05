@@ -11,6 +11,7 @@ import SidebarTOC from "@/components/widget/SidebarTOC.astro";
 import SiteInfo from "@/components/widget/SiteInfo.astro";
 import SiteStats from "@/components/widget/SiteStats.astro";
 import Tags from "@/components/widget/Tags.astro";
+import WelcomeClock from "@/components/widget/WelcomeClock.astro";
 import { sidebarLayoutConfig } from "@/config";
 import type {
 	MobileBottomComponentConfig,
@@ -44,6 +45,7 @@ const ANIMATION_DELAY_UNIT = 50; // ms
 const componentMap = {
 	profile: Profile,
 	announcement: Announcement,
+	welcomeClock: WelcomeClock,
 	categories: Categories,
 	tags: Tags,
 	sidebarToc: SidebarTOC,

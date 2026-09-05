@@ -44,6 +44,8 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       
       - name: Build site
+        env:
+          PUBLIC_QWEATHER_KEY: ${{ secrets.PUBLIC_QWEATHER_KEY }}
         run: pnpm run build
 
       - name: Create .nojekyll file

@@ -73,6 +73,7 @@ export const en: Translation = {
 	// Announcement
 	[Key.announcement]: "Announcement",
 	[Key.announcementClose]: "Close",
+	[Key.welcomeClock]: "Welcome",
 
 	[Key.comments]: "Comments",
 	[Key.commentSection]: "Comments",

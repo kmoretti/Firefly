@@ -73,6 +73,7 @@ export const ru: Translation = {
 	// Объявление
 	[Key.announcement]: "Объявление",
 	[Key.announcementClose]: "Закрыть",
+	[Key.welcomeClock]: "Добро пожаловать",
 
 	[Key.comments]: "Комментарии",
 	[Key.commentSection]: "Комментарии",

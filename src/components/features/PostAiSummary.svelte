@@ -28,15 +28,16 @@ let {
 }: Props = $props();
 
 // SSR 先渲染完整文本，水合后再启动动画，避免空白与布局跳动
-let displayed = $state(summary);
+let displayed = $state<string | undefined>(undefined);
 let caretVisible = $state(false);
-let isFolded = $state(summary.length > foldThresholdChars);
 let isNarrowScreen = $state(false);
 let isReducedMotion = $state(false);
 
-const showToggle = $derived(
-	summary.length > foldThresholdChars && isNarrowScreen,
-);
+const summaryLength = $derived(summary.length);
+const isExpandable = $derived(summaryLength > foldThresholdChars);
+let isExpanded = $state(false);
+const isFolded = $derived(isExpandable && isNarrowScreen && !isExpanded);
+const showToggle = $derived(isExpandable && isNarrowScreen);
 
 let narrowMedia: MediaQueryList | null = null;
 let motionMedia: MediaQueryList | null = null;
@@ -88,7 +89,7 @@ function renderSummary() {
 }
 
 function toggleFold() {
-	isFolded = !isFolded;
+	isExpanded = !isExpanded;
 }
 
 $effect(() => {
@@ -130,9 +131,8 @@ $effect(() => {
 	<div
 		id="ai-summary-content"
 		class="ai-summary-content rounded-xl border border-(--line-divider) bg-(--bg-secondary) px-3 py-2.5 text-sm leading-relaxed break-words whitespace-pre-wrap text-black/75 dark:text-white/75"
-		class:ai-summary-content--folded={isFolded && isNarrowScreen}
+		class:ai-summary-content--folded={isFolded}
 		role="region"
-		aria-expanded={!isFolded}
 	>
 		{displayed}{#if caretVisible}<span
 				class="ai-summary-caret"

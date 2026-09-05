@@ -54,6 +54,9 @@ enum I18nKey {
 	announcement = "announcement",
 	announcementClose = "announcementClose",
 
+	// 欢迎时钟
+	welcomeClock = "welcomeClock",
+
 	comments = "comments",
 	commentSection = "commentSection",
 	commentSubtitle = "commentSubtitle",

@@ -73,6 +73,7 @@ export const ja: Translation = {
 	// お知らせ
 	[Key.announcement]: "お知らせ",
 	[Key.announcementClose]: "閉じる",
+	[Key.welcomeClock]: "ようこそ",
 
 	[Key.comments]: "コメント",
 	[Key.commentSection]: "コメント欄",

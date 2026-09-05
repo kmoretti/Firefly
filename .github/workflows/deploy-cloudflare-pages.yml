@@ -42,6 +42,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build site
+        env:
+          PUBLIC_QWEATHER_KEY: ${{ secrets.PUBLIC_QWEATHER_KEY }}
         run: pnpm build
 
       - name: Create Pages project if needed

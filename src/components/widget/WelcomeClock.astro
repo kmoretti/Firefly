@@ -1,0 +1,555 @@
+---
+import WidgetLayout from "@/components/common/WidgetLayout.astro";
+import { welcomeClockConfig } from "@/config/welcomeClockConfig";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import type { WidgetComponentConfig } from "@/types/config";
+
+interface Props {
+	class?: string;
+	style?: string;
+	widgetConfig?: WidgetComponentConfig;
+}
+const { class: className, style, widgetConfig } = Astro.props;
+
+const config = welcomeClockConfig;
+const showTitle = widgetConfig?.showTitle !== false;
+
+const qweatherKey = import.meta.env.PUBLIC_QWEATHER_KEY ?? "";
+const apiHost = config.apiHost ?? "https://devapi.qweather.com";
+const defaultCity = config.defaultCity ?? "";
+const locationId = config.locationId ?? "";
+const timezone = config.timezone ?? "Asia/Shanghai";
+---
+
+<WidgetLayout
+	name={config.title || i18n(I18nKey.welcomeClock)}
+	showTitle={showTitle}
+	id="welcome-clock"
+	class={className}
+	style={style}
+>
+	<div class="welcome-clock-background">
+		<div id="welcome-clock-box" class="welcome-clock-box">
+			<div class="welcome-clock-loading">
+				<span class="welcome-clock-loading-dot"></span>
+				<span class="welcome-clock-loading-dot"></span>
+				<span class="welcome-clock-loading-dot"></span>
+			</div>
+		</div>
+	</div>
+</WidgetLayout>
+
+<style>
+	@font-face {
+		font-family: "UnidreamLED";
+		src: url("/fonts/UniDreamLED.ttf") format("truetype");
+		font-display: swap;
+	}
+
+	@font-face {
+		font-family: "qweather-icons";
+		src:
+			url("/fonts/qweather-icons.woff2") format("woff2"),
+			url("/fonts/qweather-icons.woff") format("woff"),
+			url("/fonts/qweather-icons.ttf") format("truetype");
+		font-display: swap;
+	}
+
+	.welcome-clock-background {
+		background-color: var(--btn-regular-bg);
+		border-radius: 8px;
+		box-shadow: inset 0 0 4px 2px rgb(145 148 154 / 40%);
+		padding: 12px 14px;
+		min-height: 110px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.welcome-clock-box {
+		width: 100%;
+		font-family: "UnidreamLED", monospace;
+		font-weight: 400;
+		color: #000;
+	}
+
+	:global(:root.dark) .welcome-clock-box,
+	:global(html[data-theme="one-dark-pro"]) .welcome-clock-box {
+		color: #fff;
+	}
+
+	.welcome-clock-loading {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 6px;
+		height: 84px;
+	}
+
+	.welcome-clock-loading-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background-color: currentColor;
+		opacity: 0.4;
+		animation: welcome-clock-blink 1.2s infinite ease-in-out both;
+	}
+
+	.welcome-clock-loading-dot:nth-child(1) {
+		animation-delay: -0.32s;
+	}
+
+	.welcome-clock-loading-dot:nth-child(2) {
+		animation-delay: -0.16s;
+	}
+
+	@keyframes welcome-clock-blink {
+		0%,
+		80%,
+		100% {
+			opacity: 0.2;
+			transform: scale(0.8);
+		}
+		40% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	:global(.clock-row) {
+		font-family: "UnidreamLED", monospace;
+		font-weight: 400;
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: nowrap;
+		white-space: nowrap;
+		align-items: center;
+	}
+
+	:global(.card-clock-clockdate),
+	:global(.card-clock-ip) {
+		text-align: left;
+	}
+
+	:global(.card-clock-weather),
+	:global(.card-clock-location),
+	:global(.card-clock-windDir) {
+		font-family: "UnidreamLED", monospace;
+		font-size: 14px;
+	}
+
+	:global(.card-clock-location),
+	:global(.card-clock-weather) {
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 100%;
+		display: inline-block;
+		vertical-align: middle;
+	}
+
+	:global(.card-clock-dackorlight),
+	:global(.card-clock-humidity) {
+		text-align: right;
+		font-size: 14px;
+	}
+
+	:global(.card-clock-time) {
+		flex: 1;
+		font-family: "UnidreamLED", monospace;
+		font-size: 38px;
+		text-align: center;
+		line-height: 1.5;
+		letter-spacing: 2px;
+	}
+
+	@media screen and (max-width: 1086px) {
+		:global(.card-clock-humidity) {
+			display: none;
+		}
+	}
+
+	/* QWeather Icons (https://icons.qweather.com) - CC BY 4.0 */
+	:global([class^="qi-"])::before,
+	:global([class*=" qi-"])::before {
+		display: inline-block;
+		font-family: "qweather-icons" !important;
+		font-style: normal;
+		font-weight: normal !important;
+		font-variant: normal;
+		text-transform: none;
+		line-height: 1;
+		vertical-align: -0.125em;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	:global(.qi-100)::before { content: "\f101"; }
+	:global(.qi-101)::before { content: "\f102"; }
+	:global(.qi-102)::before { content: "\f103"; }
+	:global(.qi-103)::before { content: "\f104"; }
+	:global(.qi-104)::before { content: "\f105"; }
+	:global(.qi-150)::before { content: "\f106"; }
+	:global(.qi-151)::before { content: "\f107"; }
+	:global(.qi-152)::before { content: "\f108"; }
+	:global(.qi-153)::before { content: "\f109"; }
+	:global(.qi-300)::before { content: "\f10a"; }
+	:global(.qi-301)::before { content: "\f10b"; }
+	:global(.qi-302)::before { content: "\f10c"; }
+	:global(.qi-303)::before { content: "\f10d"; }
+	:global(.qi-304)::before { content: "\f10e"; }
+	:global(.qi-305)::before { content: "\f10f"; }
+	:global(.qi-306)::before { content: "\f110"; }
+	:global(.qi-307)::before { content: "\f111"; }
+	:global(.qi-308)::before { content: "\f112"; }
+	:global(.qi-309)::before { content: "\f113"; }
+	:global(.qi-310)::before { content: "\f114"; }
+	:global(.qi-311)::before { content: "\f115"; }
+	:global(.qi-312)::before { content: "\f116"; }
+	:global(.qi-313)::before { content: "\f117"; }
+	:global(.qi-314)::before { content: "\f118"; }
+	:global(.qi-315)::before { content: "\f119"; }
+	:global(.qi-316)::before { content: "\f11a"; }
+	:global(.qi-317)::before { content: "\f11b"; }
+	:global(.qi-318)::before { content: "\f11c"; }
+	:global(.qi-350)::before { content: "\f11d"; }
+	:global(.qi-351)::before { content: "\f11e"; }
+	:global(.qi-399)::before { content: "\f11f"; }
+	:global(.qi-400)::before { content: "\f120"; }
+	:global(.qi-401)::before { content: "\f121"; }
+	:global(.qi-402)::before { content: "\f122"; }
+	:global(.qi-403)::before { content: "\f123"; }
+	:global(.qi-404)::before { content: "\f124"; }
+	:global(.qi-405)::before { content: "\f125"; }
+	:global(.qi-406)::before { content: "\f126"; }
+	:global(.qi-407)::before { content: "\f127"; }
+	:global(.qi-408)::before { content: "\f128"; }
+	:global(.qi-409)::before { content: "\f129"; }
+	:global(.qi-410)::before { content: "\f12a"; }
+	:global(.qi-456)::before { content: "\f12b"; }
+	:global(.qi-457)::before { content: "\f12c"; }
+	:global(.qi-499)::before { content: "\f12d"; }
+	:global(.qi-500)::before { content: "\f12e"; }
+	:global(.qi-501)::before { content: "\f12f"; }
+	:global(.qi-502)::before { content: "\f130"; }
+	:global(.qi-503)::before { content: "\f131"; }
+	:global(.qi-504)::before { content: "\f132"; }
+	:global(.qi-507)::before { content: "\f133"; }
+	:global(.qi-508)::before { content: "\f134"; }
+	:global(.qi-509)::before { content: "\f135"; }
+	:global(.qi-510)::before { content: "\f136"; }
+	:global(.qi-511)::before { content: "\f137"; }
+	:global(.qi-512)::before { content: "\f138"; }
+	:global(.qi-513)::before { content: "\f139"; }
+	:global(.qi-514)::before { content: "\f13a"; }
+	:global(.qi-515)::before { content: "\f13b"; }
+	:global(.qi-800)::before { content: "\f13c"; }
+	:global(.qi-801)::before { content: "\f13d"; }
+	:global(.qi-802)::before { content: "\f13e"; }
+	:global(.qi-803)::before { content: "\f13f"; }
+	:global(.qi-804)::before { content: "\f140"; }
+	:global(.qi-805)::before { content: "\f141"; }
+	:global(.qi-806)::before { content: "\f142"; }
+	:global(.qi-807)::before { content: "\f143"; }
+	:global(.qi-900)::before { content: "\f144"; }
+	:global(.qi-901)::before { content: "\f145"; }
+	:global(.qi-999)::before { content: "\f146"; }
+	:global(.qi-100-fill)::before { content: "\f1ac"; }
+	:global(.qi-101-fill)::before { content: "\f1ad"; }
+	:global(.qi-102-fill)::before { content: "\f1ae"; }
+	:global(.qi-103-fill)::before { content: "\f1af"; }
+	:global(.qi-104-fill)::before { content: "\f1b0"; }
+	:global(.qi-150-fill)::before { content: "\f1b1"; }
+	:global(.qi-151-fill)::before { content: "\f1b2"; }
+	:global(.qi-152-fill)::before { content: "\f1b3"; }
+	:global(.qi-153-fill)::before { content: "\f1b4"; }
+	:global(.qi-300-fill)::before { content: "\f1b5"; }
+	:global(.qi-301-fill)::before { content: "\f1b6"; }
+	:global(.qi-302-fill)::before { content: "\f1b7"; }
+	:global(.qi-303-fill)::before { content: "\f1b8"; }
+	:global(.qi-304-fill)::before { content: "\f1b9"; }
+	:global(.qi-305-fill)::before { content: "\f1ba"; }
+	:global(.qi-306-fill)::before { content: "\f1bb"; }
+	:global(.qi-307-fill)::before { content: "\f1bc"; }
+	:global(.qi-308-fill)::before { content: "\f1bd"; }
+	:global(.qi-309-fill)::before { content: "\f1be"; }
+	:global(.qi-310-fill)::before { content: "\f1bf"; }
+	:global(.qi-311-fill)::before { content: "\f1c0"; }
+	:global(.qi-312-fill)::before { content: "\f1c1"; }
+	:global(.qi-313-fill)::before { content: "\f1c2"; }
+	:global(.qi-314-fill)::before { content: "\f1c3"; }
+	:global(.qi-315-fill)::before { content: "\f1c4"; }
+	:global(.qi-316-fill)::before { content: "\f1c5"; }
+	:global(.qi-317-fill)::before { content: "\f1c6"; }
+	:global(.qi-318-fill)::before { content: "\f1c7"; }
+	:global(.qi-350-fill)::before { content: "\f1c8"; }
+	:global(.qi-351-fill)::before { content: "\f1c9"; }
+	:global(.qi-399-fill)::before { content: "\f1ca"; }
+	:global(.qi-400-fill)::before { content: "\f1cb"; }
+	:global(.qi-401-fill)::before { content: "\f1cc"; }
+	:global(.qi-402-fill)::before { content: "\f1cd"; }
+	:global(.qi-403-fill)::before { content: "\f1ce"; }
+	:global(.qi-404-fill)::before { content: "\f1cf"; }
+	:global(.qi-405-fill)::before { content: "\f1d0"; }
+	:global(.qi-406-fill)::before { content: "\f1d1"; }
+	:global(.qi-407-fill)::before { content: "\f1d2"; }
+	:global(.qi-408-fill)::before { content: "\f1d3"; }
+	:global(.qi-409-fill)::before { content: "\f1d4"; }
+	:global(.qi-410-fill)::before { content: "\f1d5"; }
+	:global(.qi-456-fill)::before { content: "\f1d6"; }
+	:global(.qi-457-fill)::before { content: "\f1d7"; }
+	:global(.qi-499-fill)::before { content: "\f1d8"; }
+	:global(.qi-500-fill)::before { content: "\f1d9"; }
+	:global(.qi-501-fill)::before { content: "\f1da"; }
+	:global(.qi-502-fill)::before { content: "\f1db"; }
+	:global(.qi-503-fill)::before { content: "\f1dc"; }
+	:global(.qi-504-fill)::before { content: "\f1dd"; }
+	:global(.qi-507-fill)::before { content: "\f1de"; }
+	:global(.qi-508-fill)::before { content: "\f1df"; }
+	:global(.qi-509-fill)::before { content: "\f1e0"; }
+	:global(.qi-510-fill)::before { content: "\f1e1"; }
+	:global(.qi-511-fill)::before { content: "\f1e2"; }
+	:global(.qi-512-fill)::before { content: "\f1e3"; }
+	:global(.qi-513-fill)::before { content: "\f1e4"; }
+	:global(.qi-514-fill)::before { content: "\f1e5"; }
+	:global(.qi-515-fill)::before { content: "\f1e6"; }
+	:global(.qi-900-fill)::before { content: "\f1e7"; }
+	:global(.qi-901-fill)::before { content: "\f1e8"; }
+	:global(.qi-999-fill)::before { content: "\f1e9"; }
+	:global(.qi-gale)::before { content: "\f14c"; }
+</style>
+
+<script
+	is:inline
+	define:vars={{
+		qweatherKey,
+		apiHost,
+		defaultCity,
+		locationId,
+		timezone,
+	}}
+>
+	(() => {
+		const WEEK = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+		const zeroPadding = (num, d) => ("0".repeat(d) + num).slice(-d);
+
+		const getIconColor = (icon) => {
+			switch (icon) {
+				case "100":
+					return "#fdcc45";
+				case "101":
+					return "#fe6976";
+				case "102":
+				case "103":
+					return "#fe7f5b";
+				case "104":
+				case "150":
+				case "151":
+				case "152":
+				case "153":
+				case "154":
+				case "800":
+				case "801":
+				case "802":
+				case "803":
+				case "804":
+				case "805":
+				case "806":
+				case "807":
+					return "#2152d1";
+				case "300":
+				case "301":
+				case "305":
+				case "306":
+				case "307":
+				case "308":
+				case "309":
+				case "310":
+				case "311":
+				case "312":
+				case "313":
+				case "314":
+				case "315":
+				case "316":
+				case "317":
+				case "318":
+				case "350":
+				case "351":
+				case "399":
+					return "#49b1f5";
+				case "302":
+				case "303":
+				case "304":
+					return "#fdcc46";
+				case "400":
+				case "401":
+				case "402":
+				case "403":
+				case "404":
+				case "405":
+				case "406":
+				case "407":
+				case "408":
+				case "409":
+				case "410":
+				case "456":
+				case "457":
+				case "499":
+					return "#a3c2dc";
+				case "500":
+				case "501":
+				case "502":
+				case "503":
+				case "504":
+				case "507":
+				case "508":
+				case "509":
+				case "510":
+				case "511":
+				case "512":
+				case "513":
+				case "514":
+				case "515":
+					return "#97acba";
+				case "900":
+				case "999":
+					return "red";
+				case "901":
+					return "#179fff";
+				default:
+					return "#fdcc45";
+			}
+		};
+
+		const startClock = (box, tz) => {
+			if (box.dataset.clockRunning === "true") return;
+			box.dataset.clockRunning = "true";
+
+			const updateTime = () => {
+				const timeEl = box.querySelector("#card-clock-time");
+				const dateEl = box.querySelector("#card-clock-clockdate");
+				const ampmEl = box.querySelector("#card-clock-dackorlight");
+				if (!timeEl || !dateEl || !ampmEl) return;
+
+				const now = new Date();
+				const cd = new Date(
+					now.toLocaleString("en-US", { timeZone: tz, hour12: false }),
+				);
+
+				timeEl.textContent = `${zeroPadding(cd.getHours(), 2)}:${zeroPadding(cd.getMinutes(), 2)}:${zeroPadding(cd.getSeconds(), 2)}`;
+				dateEl.textContent = `${cd.getFullYear()}-${zeroPadding(cd.getMonth() + 1, 2)}-${zeroPadding(cd.getDate(), 2)} ${WEEK[cd.getDay()]}`;
+				ampmEl.textContent = cd.getHours() >= 12 ? "P M" : "A M";
+			};
+
+			updateTime();
+			const timer = setInterval(updateTime, 1000);
+
+			document.addEventListener(
+				"astro:before-swap",
+				() => {
+					clearInterval(timer);
+					box.dataset.clockRunning = "false";
+				},
+				{ once: true },
+			);
+		};
+
+		const renderClock = (box, info, city, tz) => {
+			const color = getIconColor(info.now.icon);
+			box.innerHTML = `
+				<div class="clock-row">
+					<span id="card-clock-clockdate" class="card-clock-clockdate"></span>
+					<span class="card-clock-weather"><i class="qi-${info.now.icon}-fill" style="color: ${color}"></i> ${info.now.text} <span>${info.now.temp}</span> ℃</span>
+					<span class="card-clock-humidity">💧 ${info.now.humidity}%</span>
+				</div>
+				<div class="clock-row">
+					<span id="card-clock-time" class="card-clock-time"></span>
+				</div>
+				<div class="clock-row">
+					<span class="card-clock-windDir"><i class="qi-gale"></i> ${info.now.windDir}</span>
+					<span class="card-clock-location">${city}</span>
+					<span id="card-clock-dackorlight" class="card-clock-dackorlight"></span>
+				</div>
+			`;
+			startClock(box, tz);
+		};
+
+		const renderFallback = (box, city, tz) => {
+			box.innerHTML = `
+				<div class="clock-row">
+					<span id="card-clock-clockdate" class="card-clock-clockdate"></span>
+					<span class="card-clock-weather"></span>
+					<span class="card-clock-humidity"></span>
+				</div>
+				<div class="clock-row">
+					<span id="card-clock-time" class="card-clock-time"></span>
+				</div>
+				<div class="clock-row">
+					<span class="card-clock-windDir"></span>
+					<span class="card-clock-location">${city}</span>
+					<span id="card-clock-dackorlight" class="card-clock-dackorlight"></span>
+				</div>
+			`;
+			startClock(box, tz);
+		};
+
+		const fetchWeather = async (box) => {
+			if (!qweatherKey) {
+				renderFallback(box, defaultCity, timezone);
+				return;
+			}
+
+			try {
+				let locId = locationId;
+				let tz = timezone;
+				let city = defaultCity;
+
+				if (!locId && defaultCity) {
+					const geoRes = await fetch(
+						`${apiHost}/geo/v2/city/lookup?location=${encodeURIComponent(defaultCity)}&key=${qweatherKey}`,
+					);
+					const geoData = await geoRes.json();
+					const loc = geoData.location?.[0];
+					if (!loc) throw new Error("geo lookup failed");
+					locId = loc.id;
+					tz = loc.tz || timezone;
+					city = loc.name || defaultCity;
+				}
+
+				if (!locId) {
+					renderFallback(box, city, tz);
+					return;
+				}
+
+				const weatherRes = await fetch(
+					`${apiHost}/v7/weather/now?location=${locId}&key=${qweatherKey}`,
+				);
+				const weatherData = await weatherRes.json();
+				if (!weatherData.now) throw new Error("weather fetch failed");
+
+				renderClock(box, weatherData, city, tz);
+			} catch (err) {
+				console.error("[WelcomeClock] 获取天气失败:", err);
+				renderFallback(box, defaultCity, timezone);
+			}
+		};
+
+		const init = () => {
+			const box = document.getElementById("welcome-clock-box");
+			if (!box) return;
+			if (box.dataset.clockRunning === "true") return;
+			fetchWeather(box);
+		};
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", init, { once: true });
+		} else {
+			init();
+		}
+
+		document.addEventListener("astro:page-load", init);
+	})();
+</script>

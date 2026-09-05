@@ -74,6 +74,9 @@ export const zh_CN: Translation = {
 	[Key.announcement]: "公告",
 	[Key.announcementClose]: "关闭",
 
+	// 欢迎时钟
+	[Key.welcomeClock]: "欢迎",
+
 	[Key.comments]: "评论",
 	[Key.commentSection]: "评论区",
 	[Key.commentSubtitle]: "分享你的想法，与大家交流讨论",

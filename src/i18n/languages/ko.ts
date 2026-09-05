@@ -73,6 +73,7 @@ export const ko: Translation = {
 	// Announcement
 	[Key.announcement]: "공지사항",
 	[Key.announcementClose]: "닫기",
+	[Key.welcomeClock]: "환영합니다",
 
 	[Key.comments]: "댓글",
 	[Key.commentSection]: "댓글",
