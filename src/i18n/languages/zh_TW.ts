@@ -435,6 +435,7 @@ export const zh_TW: Translation = {
 	[Key.siteStatsTagCount]: "標籤",
 	[Key.siteStatsTotalWords]: "總字數",
 	[Key.siteStatsRunningDays]: "運行時長",
+	[Key.siteStatsSiteLaunch]: "建站時間",
 	[Key.siteStatsLastUpdate]: "最後活動",
 	[Key.siteStatsDaysAgo]: "{days} 天前",
 	[Key.siteStatsDays]: "{days} 天",

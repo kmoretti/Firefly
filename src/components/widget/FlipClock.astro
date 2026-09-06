@@ -1,0 +1,462 @@
+---
+import { flipClockConfig } from "@/config/flipClockConfig";
+import { siteConfig } from "@/config/siteConfig";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+
+// 建站时间：翻页时钟专属配置优先，留空则回退站点配置 siteStartDate
+// 支持格式："YYYY-MM-DD" 或 "YYYY-MM-DD HH:mm"，统一按北京时间（UTC+8）解析
+const rawStartDate =
+	flipClockConfig.startDate || siteConfig.siteStartDate || "2024-11-01";
+const startIso = (() => {
+	const [datePart, timePart = "00:00"] = rawStartDate.trim().split(/\s+/);
+	const seconds = timePart.split(":").length === 2 ? ":00" : "";
+	return `${datePart}T${timePart}${seconds}+08:00`;
+})();
+
+// 天数位数自适应：按实际天数决定卡片数量（下限 3 位），
+// 满四位后自动扩展为四位，不做前导补零
+const daysElapsed = Math.max(
+	0,
+	Math.floor((Date.now() - new Date(startIso).getTime()) / 86400000),
+);
+const daysSlots = Math.max(3, String(daysElapsed).length);
+
+// 显示开关（均默认开启，保持向后兼容）
+const showTitle = flipClockConfig.showTitle !== false;
+const showSeconds = flipClockConfig.showSeconds !== false;
+
+const labelDays = i18n(I18nKey.day); // 日
+const labelHours = i18n(I18nKey.hour); // 时
+const labelMinutes = i18n(I18nKey.minute); // 分
+const labelSeconds = i18n(I18nKey.second); // 秒
+const labelUptime = i18n(I18nKey.siteStatsRunningDays); // 运行时长
+const labelSiteLaunch = i18n(I18nKey.siteStatsSiteLaunch); // 建站时间
+---
+
+<section id="flip-clock" class="flip-clock" aria-label={labelUptime}>
+	{showTitle && <span class="flip-clock__title">{labelSiteLaunch}</span>}
+	<div class="flip-clock__units" id="flip-clock-units">
+		<div class="flip-unit" data-unit="days">
+			<div class="flip-unit__cards">
+				{Array.from({ length: daysSlots }).map(() => (
+					<div class="flip-card">
+						<div class="flip-card__face flip-card__face--top"></div>
+						<div class="flip-card__face flip-card__face--bottom"></div>
+						<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+						<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+					</div>
+				))}
+			</div>
+			<div class="flip-unit__name">{labelDays}</div>
+		</div>
+		<div class="flip-unit__sep" aria-hidden="true"></div>
+		<div class="flip-unit" data-unit="hours">
+			<div class="flip-unit__cards">
+				<div class="flip-card">
+					<div class="flip-card__face flip-card__face--top"></div>
+					<div class="flip-card__face flip-card__face--bottom"></div>
+					<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+					<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+				</div>
+				<div class="flip-card">
+					<div class="flip-card__face flip-card__face--top"></div>
+					<div class="flip-card__face flip-card__face--bottom"></div>
+					<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+					<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+				</div>
+			</div>
+			<div class="flip-unit__name">{labelHours}</div>
+		</div>
+		<div class="flip-unit__sep" aria-hidden="true"></div>
+		<div class="flip-unit" data-unit="minutes">
+			<div class="flip-unit__cards">
+				<div class="flip-card">
+					<div class="flip-card__face flip-card__face--top"></div>
+					<div class="flip-card__face flip-card__face--bottom"></div>
+					<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+					<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+				</div>
+				<div class="flip-card">
+					<div class="flip-card__face flip-card__face--top"></div>
+					<div class="flip-card__face flip-card__face--bottom"></div>
+					<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+					<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+				</div>
+			</div>
+			<div class="flip-unit__name">{labelMinutes}</div>
+		</div>
+		{showSeconds && (
+			<>
+				<div class="flip-unit__sep" aria-hidden="true"></div>
+				<div class="flip-unit" data-unit="seconds">
+					<div class="flip-unit__cards">
+						<div class="flip-card">
+							<div class="flip-card__face flip-card__face--top"></div>
+							<div class="flip-card__face flip-card__face--bottom"></div>
+							<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+							<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+						</div>
+						<div class="flip-card">
+							<div class="flip-card__face flip-card__face--top"></div>
+							<div class="flip-card__face flip-card__face--bottom"></div>
+							<div class="flip-card__face flip-card__face--top flip-card__face--fold flip-card__fold--top"></div>
+							<div class="flip-card__face flip-card__face--bottom flip-card__face--fold flip-card__fold--bottom"></div>
+						</div>
+					</div>
+					<div class="flip-unit__name">{labelSeconds}</div>
+				</div>
+			</>
+		)}
+	</div>
+</section>
+
+<style>
+	@font-face {
+		font-family: "UnidreamLED";
+		src: url("/fonts/UniDreamLED.ttf") format("truetype");
+		font-display: swap;
+	}
+
+	/* ---------- 记分牌外观：让卡片直接落在页脚底板上 ---------- */
+	.flip-clock {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin: 0.5rem 0 1rem;
+		/* 翻页钟自带一套跟随主题的颜色：卡片面恒为深色记分牌，
+		   因此数字在浅/暗色下都用亮色 LED，保证浅色模式也有足够对比度 */
+		--flip-digit: oklch(0.47 0.14 var(--hue));
+		--flip-card-bg: oklch(0.94 0.015 var(--hue));
+		--flip-card-border: oklch(0.86 0.03 var(--hue));
+		--flip-sep: oklch(0.6 0.12 var(--hue));
+		--flip-face-shadow: inset 0 2px 5px rgb(0 0 0 / 0.14);
+		--flip-text-shadow: 0 1px 1px rgb(255 255 255 / 0.5);
+		--flip-hinge: rgb(0 0 0 / 0.3);
+	}
+
+	:global(:root.dark) .flip-clock {
+		--flip-digit: oklch(0.78 0.11 var(--hue));
+		--flip-card-bg: var(--codeblock-bg);
+		--flip-card-border: var(--meta-divider);
+		--flip-sep: oklch(0.75 0.1 var(--hue));
+		--flip-face-shadow: inset 0 2px 6px rgb(0 0 0 / 0.45);
+		--flip-text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+		--flip-hinge: rgb(0 0 0 / 0.55);
+	}
+
+	.flip-clock__title {
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		color: var(--content-meta);
+		margin-bottom: 0.5rem;
+	}
+
+	.flip-clock__units {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.55rem;
+		padding: 0.5rem 0.85rem 0.45rem;
+		background: var(--btn-regular-bg);
+		border: 1px solid var(--line-color);
+		border-radius: var(--radius-xl);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.35),
+			inset 0 -2px 6px rgb(0 0 0 / 0.08),
+			var(--shadow-sm);
+		user-select: none;
+	}
+
+	.flip-unit {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.28rem;
+	}
+
+	.flip-unit__cards {
+		display: flex;
+		gap: 0.16rem;
+	}
+
+	/* 计分板用圆点分隔，不用冒号 */
+	.flip-unit__sep {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.45rem;
+		align-self: stretch;
+		padding-bottom: 1rem;
+	}
+
+	.flip-unit__sep::before,
+	.flip-unit__sep::after {
+		content: "";
+		width: 0.32rem;
+		height: 0.32rem;
+		border-radius: 50%;
+		background: var(--flip-sep, var(--btn-content));
+		opacity: 0.55;
+	}
+
+	.flip-unit__name {
+		font-size: 0.6rem;
+		letter-spacing: 0.12em;
+		color: var(--content-meta);
+	}
+
+	/* ---------- 单张翻页卡片：内凹数字牌 ---------- */
+	.flip-card {
+		position: relative;
+		width: clamp(24px, 7.5vw, 40px);
+		height: clamp(38px, 12vw, 62px);
+		perspective: 300px;
+	}
+
+	.flip-card__face {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: "UnidreamLED", "Bahnschrift", "DIN Alternate", ui-monospace,
+			monospace;
+		font-size: clamp(1.5rem, 4.5vw, 2.6rem);
+		font-weight: 400;
+		line-height: 1;
+		color: var(--flip-digit);
+		background: var(--flip-card-bg);
+		border: 1px solid var(--flip-card-border);
+		border-radius: var(--radius-sm);
+		box-shadow: var(--flip-face-shadow);
+		text-shadow: var(--flip-text-shadow);
+		overflow: hidden;
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+	}
+
+	/* 上/下半分割 */
+	.flip-card__face--top {
+		clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+		border-bottom: none;
+		border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+	}
+
+	.flip-card__face--bottom {
+		clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+		border-top: none;
+		border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+		/* 下半块略暗，形成计分板立体切面 */
+		filter: brightness(0.92);
+	}
+
+	/* 铰链中缝 */
+	.flip-card__face--top::after,
+	.flip-card__face--bottom::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 50%;
+		height: 1px;
+		background: var(--flip-hinge);
+	}
+
+	/* 左右铰链轴点（计分板圆柱销钉） */
+	.flip-card__face--top::before,
+	.flip-card__face--bottom::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		width: 0.22rem;
+		height: 0.22rem;
+		transform: translateY(-50%);
+		border-radius: 50%;
+		background: rgb(0 0 0 / 0.4);
+		z-index: 1;
+	}
+
+	.flip-card__face--top::before {
+		left: 0.14rem;
+	}
+
+	.flip-card__face--bottom::after {
+		right: 0.14rem;
+	}
+
+	/* 翻转层：动画期间才显示，覆盖静态层 */
+	.flip-card__face--fold {
+		z-index: 2;
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.flip-card__face--fold.flip-card__fold--top {
+		transform-origin: bottom center;
+	}
+
+	.flip-card__face--fold.flip-card__fold--bottom {
+		transform-origin: top center;
+	}
+
+	/* 同步单次翻页：上下半片绕各自铰链在同一 0.35s 内联动，
+	   表现为一次连贯折叠（顶片下压、底片翻起同时收尾），
+	   不再分段错峰，避免被感知成“两次翻页”。 */
+	.flip-card.is-animating .flip-card__face--top.flip-card__face--fold {
+		visibility: visible;
+		opacity: 1;
+		will-change: transform;
+		animation: flip-top 0.35s cubic-bezier(0.4, 0.1, 0.2, 1) forwards;
+	}
+
+	.flip-card.is-animating .flip-card__face--bottom.flip-card__face--fold {
+		visibility: visible;
+		opacity: 1;
+		will-change: transform;
+		animation: flip-bottom 0.35s cubic-bezier(0.4, 0.1, 0.2, 1) forwards;
+	}
+
+	@keyframes flip-top {
+		from { transform: rotateX(0deg); }
+		to { transform: rotateX(-90deg); }
+	}
+
+	@keyframes flip-bottom {
+		from { transform: rotateX(90deg); }
+		to { transform: rotateX(0deg); }
+	}
+
+	/* ---------- 响应式 ---------- */
+	@media (max-width: 640px) {
+		.flip-clock__units {
+			gap: 0.4rem;
+			padding: 0.4rem 0.6rem 0.35rem;
+		}
+		.flip-unit__name {
+			font-size: 0.55rem;
+		}
+		.flip-unit__sep {
+			gap: 0.35rem;
+			padding-bottom: 0.85rem;
+		}
+	}
+
+	/* 减少动态偏好：关闭翻转动画 */
+	@media (prefers-reduced-motion: reduce) {
+		.flip-card.is-animating .flip-card__face--fold {
+			animation: none;
+		}
+	}
+</style>
+
+<script
+	is:inline
+	define:vars={{ startIso }}
+>
+	(() => {
+		// 全局单例标志：Astro / swup 每次页面加载都会重跑此脚本，
+		// 用 window 上的标志保证同一页面只维护一个定时器，避免叠加导致翻页错乱。
+		const NS = "__fireflyFlipClock__";
+		const start = new Date(startIso);
+
+		// 计算自建站以来的天/时/分/秒
+		const compute = () => {
+			const total = Math.max(0, Math.floor((Date.now() - start.getTime()) / 1000));
+			return {
+				days: Math.floor(total / 86400),
+				hours: Math.floor((total % 86400) / 3600),
+				minutes: Math.floor((total % 3600) / 60),
+				seconds: total % 60,
+			};
+		};
+
+		// 让单个数字触发一次翻页动画（无变化则不触发）
+		const setDigit = (value, card) => {
+			if (!card) return;
+			const top = card.querySelector(".flip-card__face--top:not(.flip-card__face--fold)");
+			const bottom = card.querySelector(".flip-card__face--bottom:not(.flip-card__face--fold)");
+			const topFold = card.querySelector(".flip-card__face--top.flip-card__face--fold");
+			const bottomFold = card.querySelector(".flip-card__face--bottom.flip-card__face--fold");
+			if (!top || !bottom || !topFold || !bottomFold) return;
+
+			const text = String(value);
+			if (top.textContent === text) return; // 未变化
+
+			// 动画期：折叠层显示旧值(上)/新值(下)；静态上层提前换成新值，
+			// 这样上半片翻下去后露出的就是新数字，避免闪帧
+			topFold.textContent = top.textContent || text;
+			bottomFold.textContent = text;
+			top.textContent = text;
+
+			card.classList.remove("is-animating");
+			void card.offsetWidth; // 强制回流复位动画
+			card.classList.add("is-animating");
+
+			// 动画结束（上下半片同步联动 0.35s）：静态层换新值，隐藏折叠层
+			window.setTimeout(() => {
+				top.textContent = text;
+				bottom.textContent = text;
+				card.classList.remove("is-animating");
+			}, 350);
+		};
+
+		// 初始化静态层初值（不播放动画）。位数以 DOM 中实际卡片数为准，
+		// 天数卡片数量由模板按建站日期动态渲染
+		const init = () => {
+			const v = compute();
+			document.querySelectorAll(".flip-unit").forEach((unit) => {
+				const cards = unit.querySelectorAll(".flip-card");
+				const digits = String(v[unit.dataset.unit]).padStart(cards.length, "0");
+				cards.forEach((card, i) => {
+					const top = card.querySelector(".flip-card__face--top:not(.flip-card__face--fold)");
+					const bottom = card.querySelector(".flip-card__face--bottom:not(.flip-card__face--fold)");
+					const text = digits[i] ?? "0";
+					if (top && top.textContent !== text) top.textContent = text;
+					if (bottom && bottom.textContent !== text) bottom.textContent = text;
+				});
+			});
+		};
+
+		// 每一秒更新所有单元（逐位比对，只翻变化的位）
+		const tick = () => {
+			const v = compute();
+			document.querySelectorAll(".flip-unit").forEach((unit) => {
+				const cards = unit.querySelectorAll(".flip-card");
+				const digits = String(v[unit.dataset.unit]).padStart(cards.length, "0");
+				cards.forEach((card, i) => {
+					setDigit(digits[i], card);
+				});
+			});
+		};
+
+		// 启动单例定时器（幂等：重复调用不会叠加多个 interval）
+		const startTicker = () => {
+			if (!window[NS]) {
+				window[NS] = window.setInterval(tick, 1000);
+			}
+		};
+
+		// 页面切换前（swup 即将替换 DOM）：清除定时器，标志复位
+		document.addEventListener("astro:before-swap", () => {
+			if (window[NS]) {
+				window.clearInterval(window[NS]);
+				window[NS] = null;
+			}
+		});
+
+		// 页面切换完成（swup 或 astro 全量加载）：重新初始化并启动
+		const onLoad = () => {
+			init();
+			startTicker();
+		};
+		document.addEventListener("astro:page-load", onLoad);
+
+		// DOMContentLoaded 兜底（Footer 内的 is:inline 脚本在文档结构之后执行）
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", onLoad, { once: true });
+		} else {
+			onLoad();
+		}
+	})();
+</script>

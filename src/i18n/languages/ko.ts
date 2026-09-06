@@ -441,6 +441,7 @@ export const ko: Translation = {
 	[Key.siteStatsTagCount]: "태그",
 	[Key.siteStatsTotalWords]: "총 단어 수",
 	[Key.siteStatsRunningDays]: "운영 일수",
+	[Key.siteStatsSiteLaunch]: "사이트 개설부터",
 	[Key.siteStatsLastUpdate]: "최근 활동",
 	[Key.siteStatsDaysAgo]: "{days}일 전",
 	[Key.siteStatsDays]: "{days}일",
