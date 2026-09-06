@@ -496,52 +496,66 @@ const timezone = config.timezone ?? "Asia/Shanghai";
 			startClock(box, tz);
 		};
 
-		const fetchWeather = async (box) => {
-			if (!qweatherKey) {
-				renderFallback(box, defaultCity, timezone);
-				return;
+		// 桌面侧边栏与移动端底部各渲染一份时钟实例，天气结果缓存为共享
+		// Promise，多个实例只发一次接口请求；失败回退纯时钟
+		let weatherDataPromise = null;
+		const getWeatherData = () => {
+			if (!weatherDataPromise) {
+				weatherDataPromise = fetchWeatherData().catch((err) => {
+					console.error("[WelcomeClock] 获取天气失败:", err);
+					return null;
+				});
 			}
+			return weatherDataPromise;
+		};
 
-			try {
-				let locId = locationId;
-				let tz = timezone;
-				let city = defaultCity;
-
-				if (!locId && defaultCity) {
-					const geoRes = await fetch(
-						`${apiHost}/geo/v2/city/lookup?location=${encodeURIComponent(defaultCity)}&key=${qweatherKey}`,
-					);
-					const geoData = await geoRes.json();
-					const loc = geoData.location?.[0];
-					if (!loc) throw new Error("geo lookup failed");
-					locId = loc.id;
-					tz = loc.tz || timezone;
-					city = loc.name || defaultCity;
-				}
-
-				if (!locId) {
-					renderFallback(box, city, tz);
-					return;
-				}
-
-				const weatherRes = await fetch(
-					`${apiHost}/v7/weather/now?location=${locId}&key=${qweatherKey}`,
-				);
-				const weatherData = await weatherRes.json();
-				if (!weatherData.now) throw new Error("weather fetch failed");
-
-				renderClock(box, weatherData, city, tz);
-			} catch (err) {
-				console.error("[WelcomeClock] 获取天气失败:", err);
+		const fetchWeather = async (box) => {
+			const data = await getWeatherData();
+			if (data) {
+				renderClock(box, data.info, data.city, data.tz);
+			} else {
 				renderFallback(box, defaultCity, timezone);
 			}
 		};
 
+		const fetchWeatherData = async () => {
+			if (!qweatherKey) return null;
+
+			let locId = locationId;
+			let tz = timezone;
+			let city = defaultCity;
+
+			if (!locId && defaultCity) {
+				const geoRes = await fetch(
+					`${apiHost}/geo/v2/city/lookup?location=${encodeURIComponent(defaultCity)}&key=${qweatherKey}`,
+				);
+				const geoData = await geoRes.json();
+				const loc = geoData.location?.[0];
+				if (!loc) throw new Error("geo lookup failed");
+				locId = loc.id;
+				tz = loc.tz || timezone;
+				city = loc.name || defaultCity;
+			}
+
+			if (!locId) return null;
+
+			const weatherRes = await fetch(
+				`${apiHost}/v7/weather/now?location=${locId}&key=${qweatherKey}`,
+			);
+			const weatherData = await weatherRes.json();
+			if (!weatherData.now) throw new Error("weather fetch failed");
+
+			return { info: weatherData, city, tz };
+		};
+
 		const init = () => {
-			const box = document.getElementById("welcome-clock-box");
-			if (!box) return;
-			if (box.dataset.clockRunning === "true") return;
-			fetchWeather(box);
+			// 同一页面存在多份时钟实例（桌面侧边栏 + 移动端底部），逐实例初始化；
+			// clockInit 标记同步写入，防止两份内联脚本对同一实例重复初始化
+			document.querySelectorAll(".welcome-clock-box").forEach((box) => {
+				if (box.dataset.clockInit === "true") return;
+				box.dataset.clockInit = "true";
+				fetchWeather(box);
+			});
 		};
 
 		if (document.readyState === "loading") {

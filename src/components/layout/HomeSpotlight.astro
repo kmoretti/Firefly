@@ -5,7 +5,7 @@ import { siteConfig } from "@/config";
 
 // 首页「置顶卡片堆叠 + 随便逛逛」：
 // 桌面端（≥769px）3.5fr 随便逛逛 + 6.5fr 置顶堆叠双列网格，
-// 移动端（≤768px）只渲染置顶堆叠（随便逛逛按钮隐藏，与参考站一致）。
+// 移动端（≤768px）随便逛逛横幅置顶堆叠上方单列展示，卡片高约 128px。
 // 堆叠交互（自动轮换 / hover 暂停 / 触摸滑动 / prev-next）完整移植参考站 spotlight-stack。
 interface PinnedPostCard {
 	title: string;
@@ -46,7 +46,7 @@ const autoInterval = interval ?? spotlight?.interval ?? 4200;
 
 {shouldRender && (
 	<>
-		{/* 桌面端：随便逛逛岛屿 + 置顶堆叠；≤768px 整块隐藏（随便逛逛移动端不显示） */}
+		{/* 桌面端：随便逛逛岛屿 + 置顶堆叠双列网格；≤768px 整块隐藏（由移动端区块接管） */}
 		<section
 			class:list={[
 				"home-desktop-spotlight is-spotlight-visible",
@@ -141,14 +141,31 @@ const autoInterval = interval ?? spotlight?.interval ?? 4200;
 			)}
 		</section>
 
-		{/* 移动端：仅置顶堆叠（简化横向卡），桌面端隐藏 */}
-		{hasPins && (
+		{/* 移动端：随便逛逛 + 置顶堆叠（简化横向卡），桌面端隐藏 */}
+		{shouldRender && (
 			<section
 				class="home-mobile-spotlight is-spotlight-visible"
 				data-interval={autoInterval}
-				aria-label="置顶文章"
+				aria-label={hasPins ? "置顶文章" : "随便逛逛"}
 			>
-				<div class="home-mobile-spotlight__pins">
+				{showWander && (
+					<div class="home-mobile-spotlight__random">
+						<RandomPostWander
+							client:load
+							posts={wanderPosts}
+							title={wander?.title || ""}
+							desc={wander?.desc}
+							faceCount={wander?.faceCount}
+							spinMs={wander?.spinMs}
+							easeMs={wander?.easeMs}
+							holdMs={wander?.holdMs}
+							icons={wander?.icons}
+							expanded={!hasPins}
+						/>
+					</div>
+				)}
+				{hasPins && (
+					<div class="home-mobile-spotlight__pins" aria-label="置顶文章">
 					<div class="home-mobile-spotlight__stack" data-spotlight-stack>
 						{pinnedPosts.map((post, index) => (
 							<a
@@ -194,8 +211,9 @@ const autoInterval = interval ?? spotlight?.interval ?? 4200;
 								</div>
 							</a>
 						))}
+						</div>
 					</div>
-				</div>
+				)}
 			</section>
 		)}
 	</>
@@ -585,6 +603,16 @@ const autoInterval = interval ?? spotlight?.interval ?? 4200;
 			width: 100%;
 			box-sizing: border-box;
 			margin: 0 0 16px;
+		}
+
+		/* 随便逛逛岛屿容器：定高与置顶卡对齐，经 CSS 变量同步按钮高度与圆角 */
+		.home-mobile-spotlight__random {
+			position: relative;
+			min-width: 0;
+			height: 128px;
+			margin-bottom: 12px;
+			--wander-btn-height: 128px;
+			--wander-btn-radius: var(--radius-lg, 8px);
 		}
 
 		.home-mobile-spotlight__pins {
