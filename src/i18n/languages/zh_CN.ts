@@ -69,6 +69,8 @@ export const zh_CN: Translation = {
 	[Key.musicCover]: "封面",
 	[Key.musicNoCover]: "暂无封面",
 	[Key.musicAudioPlayer]: "音频播放器",
+	[Key.musicMute]: "静音",
+	[Key.musicUnmute]: "取消静音",
 
 	// 公告栏
 	[Key.announcement]: "公告",
@@ -535,4 +537,19 @@ export const zh_CN: Translation = {
 	[Key.goInvalidLink]: "链接无效或已损坏，无法跳转",
 	[Key.goWarning]: "请自行确认目标链接的安全性后再继续访问",
 	[Key.goBack]: "返回",
+
+	// 右键菜单
+	[Key.contextMenuBack]: "后退",
+	[Key.contextMenuForward]: "前进",
+	[Key.contextMenuReload]: "刷新页面",
+	[Key.contextMenuToggleTheme]: "昼夜切换",
+	[Key.contextMenuReadingMode]: "阅读模式",
+	[Key.contextMenuBackToComment]: "直达评论",
+	[Key.contextMenuBackToTop]: "回到顶部",
+	[Key.contextMenuCopyUrl]: "复制本文地址",
+	[Key.contextMenuCopySelection]: "复制选中文本",
+	[Key.contextMenuSearchSelection]: "搜索选中文本",
+	[Key.contextMenuOpenLink]: "新窗口打开",
+	[Key.contextMenuOpenImage]: "新窗口打开图片",
+	[Key.contextMenuCopyImage]: "复制图片地址",
 };

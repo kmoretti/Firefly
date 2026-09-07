@@ -52,6 +52,11 @@ export type {
 	WidgetComponentType,
 	WidgetSpecificConfig,
 } from "../types/config";
+export type {
+	ContextMenuActionType,
+	ContextMenuConfig,
+	ContextMenuItemConfig,
+} from "../types/contextMenuConfig"; // 右键菜单类型定义
 export type { FcircleConfig } from "../types/fcircleConfig";
 export type { FlipClockConfig } from "../types/flipClockConfig";
 export type {
@@ -70,6 +75,7 @@ export { announcementConfig } from "./announcementConfig"; // 公告配置
 export { backgroundWallpaper } from "./backgroundWallpaper"; // 背景壁纸配置
 export { booknavConfig, booknavPageConfig } from "./booknavConfig"; // 书签导航配置
 export { commentConfig } from "./commentConfig"; // 评论系统配置
+export { contextMenuConfig } from "./contextMenuConfig"; // 右键菜单配置
 export { coverImageConfig } from "./coverImageConfig"; // 封面图配置
 export { displaySettingsConfig } from "./displaySettingsConfig"; // 显示设置面板开关配置
 export { dynamicConfig } from "./dynamicConfig"; // 动态页面配置

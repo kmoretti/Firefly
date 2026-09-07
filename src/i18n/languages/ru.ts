@@ -69,6 +69,8 @@ export const ru: Translation = {
 	[Key.musicCover]: "Обложка",
 	[Key.musicNoCover]: "Нет обложки",
 	[Key.musicAudioPlayer]: "Аудиоплеер",
+	[Key.musicMute]: "Выключить звук",
+	[Key.musicUnmute]: "Включить звук",
 
 	// Объявление
 	[Key.announcement]: "Объявление",
@@ -549,4 +551,19 @@ export const ru: Translation = {
 	[Key.goWarning]:
 		"Пожалуйста, самостоятельно убедитесь в безопасности ссылки перед переходом",
 	[Key.goBack]: "Назад",
+
+	// Контекстное меню
+	[Key.contextMenuBack]: "Назад",
+	[Key.contextMenuForward]: "Вперёд",
+	[Key.contextMenuReload]: "Обновить",
+	[Key.contextMenuToggleTheme]: "Переключить тему",
+	[Key.contextMenuReadingMode]: "Режим чтения",
+	[Key.contextMenuBackToComment]: "К комментариям",
+	[Key.contextMenuBackToTop]: "Наверх",
+	[Key.contextMenuCopyUrl]: "Копировать адрес страницы",
+	[Key.contextMenuCopySelection]: "Копировать выделенный текст",
+	[Key.contextMenuSearchSelection]: "Искать выделенный текст",
+	[Key.contextMenuOpenLink]: "Открыть в новой вкладке",
+	[Key.contextMenuOpenImage]: "Открыть изображение в новой вкладке",
+	[Key.contextMenuCopyImage]: "Копировать адрес изображения",
 };

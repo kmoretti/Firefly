@@ -69,6 +69,8 @@ export const en: Translation = {
 	[Key.musicCover]: "Cover",
 	[Key.musicNoCover]: "No cover available",
 	[Key.musicAudioPlayer]: "Audio Player",
+	[Key.musicMute]: "Mute",
+	[Key.musicUnmute]: "Unmute",
 
 	// Announcement
 	[Key.announcement]: "Announcement",
@@ -546,4 +548,19 @@ export const en: Translation = {
 	[Key.goInvalidLink]: "The link is invalid or broken and cannot be opened",
 	[Key.goWarning]: "Please confirm the target link is safe before continuing",
 	[Key.goBack]: "Go back",
+
+	// Context Menu
+	[Key.contextMenuBack]: "Back",
+	[Key.contextMenuForward]: "Forward",
+	[Key.contextMenuReload]: "Reload",
+	[Key.contextMenuToggleTheme]: "Toggle Theme",
+	[Key.contextMenuReadingMode]: "Reading Mode",
+	[Key.contextMenuBackToComment]: "Go to Comments",
+	[Key.contextMenuBackToTop]: "Back to Top",
+	[Key.contextMenuCopyUrl]: "Copy Page URL",
+	[Key.contextMenuCopySelection]: "Copy Selected Text",
+	[Key.contextMenuSearchSelection]: "Search Selected Text",
+	[Key.contextMenuOpenLink]: "Open in New Tab",
+	[Key.contextMenuOpenImage]: "Open Image in New Tab",
+	[Key.contextMenuCopyImage]: "Copy Image URL",
 };

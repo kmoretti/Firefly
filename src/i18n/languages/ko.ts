@@ -69,6 +69,8 @@ export const ko: Translation = {
 	[Key.musicCover]: "커버",
 	[Key.musicNoCover]: "커버 이미지 없음",
 	[Key.musicAudioPlayer]: "오디오 플레이어",
+	[Key.musicMute]: "음소거",
+	[Key.musicUnmute]: "음소거 해제",
 
 	// Announcement
 	[Key.announcement]: "공지사항",
@@ -543,4 +545,19 @@ export const ko: Translation = {
 	[Key.goInvalidLink]: "링크가 유효하지 않거나 손상되어 이동할 수 없습니다",
 	[Key.goWarning]: "계속하기 전에 링크의 안전성을 직접 확인하세요",
 	[Key.goBack]: "뒤로",
+
+	// 우클릭 메뉴
+	[Key.contextMenuBack]: "뒤로",
+	[Key.contextMenuForward]: "앞으로",
+	[Key.contextMenuReload]: "새로고침",
+	[Key.contextMenuToggleTheme]: "테마 전환",
+	[Key.contextMenuReadingMode]: "읽기 모드",
+	[Key.contextMenuBackToComment]: "댓글로 이동",
+	[Key.contextMenuBackToTop]: "맨 위로",
+	[Key.contextMenuCopyUrl]: "페이지 URL 복사",
+	[Key.contextMenuCopySelection]: "선택한 텍스트 복사",
+	[Key.contextMenuSearchSelection]: "선택한 텍스트 검색",
+	[Key.contextMenuOpenLink]: "새 탭에서 열기",
+	[Key.contextMenuOpenImage]: "이미지를 새 탭에서 열기",
+	[Key.contextMenuCopyImage]: "이미지 URL 복사",
 };

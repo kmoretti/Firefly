@@ -69,6 +69,8 @@ export const ja: Translation = {
 	[Key.musicCover]: "カバー",
 	[Key.musicNoCover]: "カバーなし",
 	[Key.musicAudioPlayer]: "オーディオプレーヤー",
+	[Key.musicMute]: "ミュート",
+	[Key.musicUnmute]: "ミュート解除",
 
 	// お知らせ
 	[Key.announcement]: "お知らせ",
@@ -544,4 +546,19 @@ export const ja: Translation = {
 	[Key.goInvalidLink]: "リンクが無効または壊れているため、移動できません",
 	[Key.goWarning]: "続行する前に、リンク先の安全性をご自身でご確認ください",
 	[Key.goBack]: "戻る",
+
+	// 右クリックメニュー
+	[Key.contextMenuBack]: "戻る",
+	[Key.contextMenuForward]: "進む",
+	[Key.contextMenuReload]: "再読み込み",
+	[Key.contextMenuToggleTheme]: "テーマ切替",
+	[Key.contextMenuReadingMode]: "読書モード",
+	[Key.contextMenuBackToComment]: "コメントへ移動",
+	[Key.contextMenuBackToTop]: "ページ上部へ",
+	[Key.contextMenuCopyUrl]: "ページURLをコピー",
+	[Key.contextMenuCopySelection]: "選択テキストをコピー",
+	[Key.contextMenuSearchSelection]: "選択テキストを検索",
+	[Key.contextMenuOpenLink]: "新しいタブで開く",
+	[Key.contextMenuOpenImage]: "画像を新しいタブで開く",
+	[Key.contextMenuCopyImage]: "画像URLをコピー",
 };

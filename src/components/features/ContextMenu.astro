@@ -1,0 +1,727 @@
+---
+import { Icon } from "astro-icon/components";
+import { contextMenuConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+
+// custom 项（action 为 "custom" 或缺省）：需提供 link 或 handler，文案回退到 link
+const isCustomItem = (item: (typeof contextMenuConfig.items)[number]) =>
+	!item.action || item.action === "custom";
+const customFallbackLabel = (item: (typeof contextMenuConfig.items)[number]) =>
+	item.link ?? "";
+
+// show !== false 的项才渲染；被过滤项自带的 divider 前缀也随之消失
+const visibleItems = contextMenuConfig.items.filter(
+	(item) => item.show !== false,
+);
+
+/** action → 默认 i18n 文案 */
+const actionLabelMap: Record<string, string> = {
+	"history-back": i18n(I18nKey.contextMenuBack),
+	"history-forward": i18n(I18nKey.contextMenuForward),
+	reload: i18n(I18nKey.contextMenuReload),
+	"back-to-top": i18n(I18nKey.contextMenuBackToTop),
+	"back-to-comment": i18n(I18nKey.contextMenuBackToComment),
+	"copy-url": i18n(I18nKey.contextMenuCopyUrl),
+	"toggle-theme": i18n(I18nKey.contextMenuToggleTheme),
+	"reading-mode": i18n(I18nKey.contextMenuReadingMode),
+	"music-prev": i18n(I18nKey.musicPrev),
+	"music-next": i18n(I18nKey.musicNext),
+	"music-volume": i18n(I18nKey.musicVolume),
+};
+
+/** action → 默认图标（均已确认存在于已安装的 iconify 集合） */
+const actionIconMap: Record<string, string> = {
+	"history-back": "material-symbols:history-rounded",
+	"history-forward": "material-symbols:arrow-forward-rounded",
+	reload: "material-symbols:refresh-rounded",
+	"back-to-top": "material-symbols:keyboard-arrow-up-rounded",
+	"back-to-comment": "mingcute:comment-line",
+	"copy-url": "material-symbols:link",
+	"toggle-theme": "material-symbols:wb-sunny-outline-rounded",
+	"reading-mode": "material-symbols:auto-stories",
+	"music-toggle-play": "material-symbols:play-arrow-rounded",
+	"music-prev": "material-symbols:skip-previous-rounded",
+	"music-next": "material-symbols:skip-next-rounded",
+	"music-volume": "material-symbols:volume-up-rounded",
+};
+
+// 上下文扩展区（复制选中文本 / 搜索 / 链接 / 图片）固定文案与图标
+const ctxSelectionLabel = i18n(I18nKey.contextMenuCopySelection);
+const ctxSearchLabel = i18n(I18nKey.contextMenuSearchSelection);
+const ctxOpenLinkLabel = i18n(I18nKey.contextMenuOpenLink);
+const ctxCopyLinkLabel = i18n(I18nKey.copyLink);
+const ctxOpenImageLabel = i18n(I18nKey.contextMenuOpenImage);
+const ctxCopyImageLabel = i18n(I18nKey.contextMenuCopyImage);
+const playLabel = i18n(I18nKey.musicPlay);
+const pauseLabel = i18n(I18nKey.musicPause);
+const muteLabel = i18n(I18nKey.musicMute);
+const unmuteLabel = i18n(I18nKey.musicUnmute);
+const toastCopiedText = i18n(I18nKey.copied);
+---
+
+{
+	contextMenuConfig.enable && (
+		<>
+			<div
+				id="context-menu-overlay"
+				class="fixed inset-0 z-[9999] hidden"
+				aria-hidden="true"
+			/>
+			<nav
+				id="context-menu"
+				class="card-base fixed z-[10000] hidden w-52 rounded-xl py-1.5 shadow-xl"
+				role="menu"
+				data-min-width={contextMenuConfig.minWidth}
+				data-show-native-in-editable={String(
+					contextMenuConfig.showNativeInEditable,
+				)}
+				data-search-engine={contextMenuConfig.searchEngine}
+				data-toast-copied={toastCopiedText}
+			>
+				{/* 上下文扩展区：子项默认 display:none，由脚本按右键上下文在 menu 根上加 show-* 标记类放行；各项可经 contextItems 配置开关 */}
+				<div id="ctx-context-items">
+					{(contextMenuConfig.contextItems?.copySelection ?? true) && (
+						<button type="button" role="menuitem" class="ctx-item ctx-need-selection" data-action="copy-selection">
+							<Icon name="material-symbols:content-copy-rounded" class="ctx-icon" />
+							<span>{ctxSelectionLabel}</span>
+						</button>
+					)}
+					{(contextMenuConfig.contextItems?.searchSelection ?? true) && (
+						<button type="button" role="menuitem" class="ctx-item ctx-need-selection" data-action="search-selection">
+							<Icon name="material-symbols:search" class="ctx-icon" />
+							<span>{ctxSearchLabel}</span>
+						</button>
+					)}
+					{(contextMenuConfig.contextItems?.openLink ?? true) && (
+						<button type="button" role="menuitem" class="ctx-item ctx-need-link" data-action="open-link">
+							<Icon name="material-symbols:open-in-new" class="ctx-icon" />
+							<span>{ctxOpenLinkLabel}</span>
+						</button>
+					)}
+					{(contextMenuConfig.contextItems?.copyLink ?? true) && (
+						<button type="button" role="menuitem" class="ctx-item ctx-need-link" data-action="copy-link">
+							<Icon name="material-symbols:link" class="ctx-icon" />
+							<span>{ctxCopyLinkLabel}</span>
+						</button>
+					)}
+					{(contextMenuConfig.contextItems?.openImage ?? true) && (
+						<button type="button" role="menuitem" class="ctx-item ctx-need-image" data-action="open-image">
+							<Icon name="material-symbols:image-outline" class="ctx-icon" />
+							<span>{ctxOpenImageLabel}</span>
+						</button>
+					)}
+					{(contextMenuConfig.contextItems?.copyImage ?? true) && (
+						<button type="button" role="menuitem" class="ctx-item ctx-need-image" data-action="copy-image">
+							<Icon name="material-symbols:content-copy-rounded" class="ctx-icon" />
+							<span>{ctxCopyImageLabel}</span>
+						</button>
+					)}
+					<div class="ctx-divider ctx-context-divider hidden" role="separator" />
+				</div>
+
+				{visibleItems.map((item) => (
+					<>
+						{item.divider && <div class="ctx-divider" role="separator" />}
+						{item.action === "music-toggle-play" ? (
+							<button
+								type="button"
+								role="menuitem"
+								class="ctx-item ctx-need-music"
+								data-action="music-toggle-play"
+							>
+								{/* 播放/暂停双标签：脚本按 isPlaying 切换（暂停态默认可见） */}
+								<span class="ctx-when-paused inline-flex items-center gap-2">
+									<Icon name="material-symbols:play-arrow-rounded" class="ctx-icon" />
+									<span>{playLabel}</span>
+								</span>
+								<span class="ctx-when-playing hidden inline-flex items-center gap-2">
+									<Icon name="material-symbols:pause-rounded" class="ctx-icon" />
+									<span>{pauseLabel}</span>
+								</span>
+							</button>
+						) : item.action === "music-volume" ? (
+							<div class="ctx-item ctx-has-submenu ctx-need-music" role="menuitem" aria-haspopup="true">
+								<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
+								<span>{item.label ?? actionLabelMap["music-volume"]}</span>
+								{/* 二级音量子菜单：hover 展开；menu 根加 ctx-flip-left 时翻到左侧 */}
+								<div class="ctx-submenu">
+									{/* 静音/取消静音双标签：脚本按 isMuted 切换（未静音态默认可见） */}
+									<button
+										type="button"
+										role="menuitem"
+										class="ctx-subitem"
+										data-action="music-mute"
+									>
+										<span class="ctx-when-unmuted inline-flex items-center gap-2">
+											<Icon name="material-symbols:volume-off-rounded" class="ctx-icon" />
+											<span>{muteLabel}</span>
+										</span>
+										<span class="ctx-when-muted hidden inline-flex items-center gap-2">
+											<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
+											<span>{unmuteLabel}</span>
+										</span>
+									</button>
+									<input
+										type="range"
+										min="0"
+										max="100"
+										step="1"
+										data-action="music-volume-slider"
+										aria-label={i18n(I18nKey.musicVolume)}
+									/>
+									<span class="ctx-volume-value" data-role="volume-value">70%</span>
+								</div>
+							</div>
+						) : (
+							<button
+								type="button"
+								role="menuitem"
+								class:list={[
+									"ctx-item",
+									item.action === "back-to-comment" && "ctx-need-comments",
+									item.action === "reading-mode" && "ctx-need-reading",
+									item.action?.startsWith("music-") && "ctx-need-music",
+								]}
+								data-action={item.action}
+								data-link={isCustomItem(item) ? item.link : undefined}
+								data-new-tab={isCustomItem(item) ? String(item.newTab ?? false) : undefined}
+								data-handler={isCustomItem(item) ? item.handler : undefined}
+							>
+								<Icon
+									name={item.icon ?? actionIconMap[item.action ?? ""] ?? "material-symbols:open-in-new"}
+									class="ctx-icon"
+								/>
+								<span>
+									{item.label ??
+										(item.action ? actionLabelMap[item.action] : undefined) ??
+										(isCustomItem(item) ? customFallbackLabel(item) : "")}
+								</span>
+							</button>
+						)}
+					</>
+				))}
+			</nav>
+			<div
+				id="ctx-toast"
+				class="fixed bottom-10 left-1/2 z-[10001] hidden -translate-x-1/2 rounded-lg px-4 py-2 text-sm opacity-0 transition-opacity duration-200"
+				role="status"
+			/>
+		</>
+	)
+}
+
+<script>
+	import { DARK_MODE, LIGHT_MODE } from "@/constants/constants";
+	import {
+		getStoredTheme,
+		resolveTheme,
+		setTheme,
+	} from "@/utils/setting-utils";
+
+	if (!(window as unknown as { __fireflyContextMenu?: boolean })
+		.__fireflyContextMenu) {
+		(window as unknown as { __fireflyContextMenu?: boolean })
+			.__fireflyContextMenu = true;
+		// biome-ignore format: 客户端脚本整体保持单块结构
+		(() => {
+			const menu = document.getElementById("context-menu");
+			const overlay = document.getElementById("context-menu-overlay");
+			const toast = document.getElementById("ctx-toast");
+			if (!menu || !overlay || !toast) return;
+
+			const minWidth = Number.parseInt(menu.dataset.minWidth ?? "1024", 10);
+			const showNativeInEditable =
+				menu.dataset.showNativeInEditable === "true";
+			const searchEngine = menu.dataset.searchEngine ?? "";
+			const toastCopied = menu.dataset.toastCopied ?? "";
+			const SUBMENU_SPACE = 240;
+
+			// ── 复制工具：优先 Clipboard API，失败降级 execCommand ──
+			const copyText = async (text: string): Promise<boolean> => {
+				if (!text) return false;
+				try {
+					await navigator.clipboard.writeText(text);
+					return true;
+				} catch {
+					try {
+						const ta = document.createElement("textarea");
+						ta.value = text;
+						ta.style.position = "fixed";
+						ta.style.opacity = "0";
+						document.body.appendChild(ta);
+						ta.select();
+						const ok = document.execCommand("copy");
+						ta.remove();
+						return ok;
+					} catch {
+						return false;
+					}
+				}
+			};
+
+			// ── Toast：重置 2s 定时器，透明度过渡 ──
+			let toastTimer = 0;
+			const showToast = (text: string) => {
+				toast.textContent = text;
+				toast.classList.remove("hidden");
+				requestAnimationFrame(() => toast.classList.remove("opacity-0"));
+				window.clearTimeout(toastTimer);
+				toastTimer = window.setTimeout(() => {
+					toast.classList.add("opacity-0");
+					window.setTimeout(() => toast.classList.add("hidden"), 200);
+				}, 2000);
+			};
+
+			// ── 全局工具 ──
+			const getWin = () =>
+				window as unknown as { backToTop?: () => void };
+			const music = () => window.__fireflyMusic;
+			const absUrl = (href: string) => {
+				try {
+					return new URL(href, window.location.href).href;
+				} catch {
+					return href;
+				}
+			};
+
+			// ── 音乐 UI 同步：播放态双标签 + 静音态双标签 + 滑块 + 百分比（volume 量纲 0-1）──
+			const syncMusicUi = () => {
+				const st = music()?.getState();
+				if (!st) return;
+				const playing = st.isPlaying;
+				menu?.querySelectorAll(".ctx-when-playing").forEach((el) => {
+					el.classList.toggle("hidden", !playing);
+				});
+				menu?.querySelectorAll(".ctx-when-paused").forEach((el) => {
+					el.classList.toggle("hidden", playing);
+				});
+				menu?.querySelectorAll(".ctx-when-muted").forEach((el) => {
+					el.classList.toggle("hidden", !st.isMuted);
+				});
+				menu?.querySelectorAll(".ctx-when-unmuted").forEach((el) => {
+					el.classList.toggle("hidden", st.isMuted);
+				});
+				const slider = menu?.querySelector<HTMLInputElement>(
+					'input[data-action="music-volume-slider"]',
+				);
+				if (slider) slider.value = String(Math.round(st.volume * 100));
+				const volumeValue = menu?.querySelector<HTMLElement>(
+					'[data-role="volume-value"]',
+				);
+				if (volumeValue)
+					volumeValue.textContent = `${Math.round(st.volume * 100)}%`;
+			};
+
+			// ── 开关与定位 ──
+			const isOpen = () => !menu?.classList.contains("hidden");
+
+			const closeMenu = () => {
+				if (!isOpen()) return;
+				menu?.classList.add("hidden");
+				overlay?.classList.add("hidden");
+			};
+
+			const openAt = (x: number, y: number) => {
+				if (!menu || !overlay) return;
+				// 先移除 hidden 量尺寸，再决定翻转方向
+				menu.classList.remove("hidden", "ctx-flip-left");
+				menu.style.visibility = "hidden";
+				const rect = menu.getBoundingClientRect();
+				const vw = window.innerWidth;
+				const vh = window.innerHeight;
+				let left = x;
+				let top = y;
+				// 子菜单（约 240px）放不下时整体翻到左侧
+				const flipLeft = x + rect.width + SUBMENU_SPACE > vw;
+				if (flipLeft) {
+					menu.classList.add("ctx-flip-left");
+					left = x - rect.width;
+				} else if (x + rect.width > vw) {
+					left = Math.max(0, vw - rect.width);
+				}
+				if (y + rect.height > vh) {
+					top = Math.max(0, y - rect.height);
+				}
+				menu.style.visibility = "";
+				menu.style.left = `${Math.max(0, Math.round(left))}px`;
+				menu.style.top = `${Math.max(0, Math.round(top))}px`;
+				overlay.classList.remove("hidden");
+			};
+
+			// ── 阅读模式可见性：与 ImmersiveReading 按钮同一谓词 ──
+			// immersive-reading-utils.ts: enabled && isPostPage() && isDesktop()
+			// toc-utils.ts isPostPage() = pathname.includes("/posts/")
+			const isReadingModeAvailable = () =>
+				window.location.pathname.includes("/posts/") &&
+				window.innerWidth >= 1024;
+
+			// ── 右键上下文检测与显示 ──
+			document.addEventListener("contextmenu", (e) => {
+				// Ctrl+右键放行浏览器原版菜单
+				if (e.ctrlKey) return;
+				// 移动端 / 窄视口放行
+				if (window.innerWidth < minWidth) return;
+				const target = e.target instanceof Element ? e.target : null;
+				const isFormField =
+					!!target?.closest("input, textarea, select") ||
+					(target instanceof HTMLElement && target.isContentEditable);
+				if (isFormField && showNativeInEditable) return;
+
+				e.preventDefault();
+				if (!menu || !overlay) return;
+
+				// 上下文检测：选区 / 链接 / 图片
+				const selection = window.getSelection();
+				const selectionText = selection?.toString().trim() ?? "";
+				const hasSelection = selection
+					? !selection.isCollapsed && !!selectionText
+					: false;
+				const link = target?.closest("a[href]");
+				const img = target?.closest("img");
+
+				menu.classList.toggle("show-selection", hasSelection);
+				menu.classList.toggle("show-link", !!link);
+				menu.classList.toggle("show-image", !!img);
+				if (link) menu.dataset.link = link.getAttribute("href") ?? "";
+				if (img instanceof HTMLImageElement)
+					menu.dataset.image = img.currentSrc || img.src || "";
+				// 上下文区任一项可见时显示分隔线
+				menu
+					.querySelector(".ctx-context-divider")
+					?.classList.toggle("hidden", !(hasSelection || link || img));
+
+				// 运行时可见性（menu 根标记类）：音乐 / 评论 / 阅读模式
+				menu.classList.toggle(
+					"ctx-has-music",
+					typeof music()?.getState === "function",
+				);
+				menu.classList.toggle(
+					"ctx-has-comments",
+					!!document.getElementById("post-comments"),
+				);
+				menu.classList.toggle("ctx-has-reading", isReadingModeAvailable());
+
+				syncMusicUi();
+				openAt(e.clientX, e.clientY);
+			});
+
+			// ── 关闭途径（一次性绑定）──
+			const onClose = () => closeMenu();
+			overlay.addEventListener("click", onClose);
+			window.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") onClose();
+			});
+			window.addEventListener("blur", onClose);
+			window.addEventListener("scroll", onClose, {
+				capture: true,
+				passive: true,
+			});
+			window.addEventListener("resize", onClose);
+			// swup 页面切换事件名照抄 BackToComment.astro
+			document.addEventListener("astro:page-load", onClose);
+			document.addEventListener("swup:contentReplaced", onClose);
+			document.addEventListener("swup:enable", onClose);
+
+			// ── action 分发（menu 事件委托）──
+			const handleAction = async (el: HTMLElement) => {
+				const action = el.dataset.action;
+				switch (action) {
+					case "history-back":
+						history.back();
+						break;
+					case "history-forward":
+						history.forward();
+						break;
+					case "reload":
+						location.reload();
+						break;
+					case "back-to-top": {
+						const w = getWin();
+						if (typeof w.backToTop === "function") {
+							w.backToTop();
+						} else {
+							window.scrollTo({ top: 0, behavior: "smooth" });
+						}
+						break;
+					}
+					case "back-to-comment": {
+						const g = window as unknown as {
+							scrollToCommentSection?: () => void;
+						};
+						if (typeof g.scrollToCommentSection === "function") {
+							g.scrollToCommentSection();
+						} else {
+							document
+								.getElementById("post-comments")
+								?.scrollIntoView({ behavior: "smooth" });
+						}
+						break;
+					}
+					case "copy-url": {
+						const ok = await copyText(location.href);
+						if (ok) showToast(toastCopied);
+						break;
+					}
+					case "toggle-theme": {
+						// stored 可能是 system 模式：先解析出实际明暗，再取反并写入
+						const stored = getStoredTheme();
+						setTheme(
+							resolveTheme(stored) === DARK_MODE
+								? LIGHT_MODE
+								: DARK_MODE,
+						);
+						break;
+					}
+					case "reading-mode":
+						(window as unknown as { toggleImmersiveReading?: () => void })
+							.toggleImmersiveReading?.();
+						break;
+					case "music-toggle-play":
+						music()?.togglePlay();
+						break;
+					case "music-prev":
+						music()?.playPrev();
+						break;
+					case "music-next":
+						music()?.playNext();
+						break;
+					case "music-mute": {
+						music()?.toggleMute();
+						syncMusicUi();
+						break;
+					}
+					case "copy-selection": {
+						const text = window.getSelection()?.toString() ?? "";
+						const ok = await copyText(text);
+						if (ok) showToast(toastCopied);
+						break;
+					}
+					case "search-selection": {
+						const text = window.getSelection()?.toString() ?? "";
+						if (text && searchEngine) {
+							window.open(
+								searchEngine.replace(
+									"{query}",
+									encodeURIComponent(text),
+								),
+								"_blank",
+								"noopener",
+							);
+						}
+						break;
+					}
+					case "open-link":
+						if (menu?.dataset.link)
+							window.open(menu.dataset.link, "_blank", "noopener");
+						break;
+					case "copy-link": {
+						const ok = await copyText(absUrl(menu?.dataset.link ?? ""));
+						if (ok) showToast(toastCopied);
+						break;
+					}
+					case "open-image":
+						if (menu?.dataset.image)
+							window.open(menu.dataset.image, "_blank", "noopener");
+						break;
+					case "copy-image": {
+						const ok = await copyText(
+							absUrl(menu?.dataset.image ?? ""),
+						);
+						if (ok) showToast(toastCopied);
+						break;
+					}
+					default: {
+						// custom（action 为 "custom" 或缺省）：link 按 newTab 决定跳转方式 / handler 页面上下文执行
+						const link = el.dataset.link;
+						const handler = el.dataset.handler;
+						if (link) {
+							if (el.dataset.newTab === "true") {
+								window.open(link, "_blank", "noopener");
+							} else {
+								window.location.href = link;
+							}
+						} else if (handler) {
+							try {
+								new Function(handler).call(window);
+							} catch (err) {
+								console.error("[context-menu]", err);
+							}
+						}
+					}
+				}
+			};
+
+			menu.addEventListener("click", (e) => {
+				const el = e.target instanceof Element ? e.target : null;
+				const actionable = el?.closest<HTMLElement>("[data-action]");
+				if (!actionable || !menu) return;
+				// 滑块由 input 事件单独处理
+				if (actionable.dataset.action === "music-volume-slider") return;
+				handleAction(actionable);
+				// 静音按钮切换后保持菜单打开，便于继续调音量
+				if (actionable.dataset.action !== "music-mute") closeMenu();
+			});
+
+			// 滑块拖动：调音量（setVolume 内部自动取消静音），不关菜单
+			menu.addEventListener("input", (e) => {
+				const el = e.target instanceof HTMLInputElement ? e.target : null;
+				if (!el || el.dataset.action !== "music-volume-slider") return;
+				const v = Number.parseInt(el.value, 10);
+				if (Number.isNaN(v)) return;
+				music()?.setVolume(v / 100);
+				const volumeValue = menu.querySelector<HTMLElement>(
+					'[data-role="volume-value"]',
+				);
+				if (volumeValue) volumeValue.textContent = `${v}%`;
+			});
+		})();
+	}
+</script>
+
+<style lang="stylus">
+// 菜单本体挂 card-base（背景/阴影随 .dark 自动切换）；此处只做布局与状态样式
+#context-menu
+	user-select: none
+
+	// 上下文扩展区显隐：默认全隐藏，按 menu 根上的 show-* 标记类放行
+	// 标记类动态加在菜单根元素自身上，启用规则必须用 & 前缀（&.show-* / &.ctx-has-*），
+	// 否则编译为 "#context-menu .show-* …" 后代链永远无法匹配
+	.ctx-need-selection
+		display: none
+
+	&.show-selection .ctx-need-selection
+		display: flex
+
+	.ctx-need-link
+		display: none
+
+	&.show-link .ctx-need-link
+		display: flex
+
+	.ctx-need-image
+		display: none
+
+	&.show-image .ctx-need-image
+		display: flex
+
+	// 运行时能力可见性：按 menu 根上的 ctx-has-* 标记类放行（音乐 / 评论 / 阅读模式）
+	.ctx-need-music
+		display: none
+
+	&.ctx-has-music .ctx-need-music
+		display: flex
+
+	.ctx-need-comments
+		display: none
+
+	&.ctx-has-comments .ctx-need-comments
+		display: flex
+
+	.ctx-need-reading
+		display: none
+
+	&.ctx-has-reading .ctx-need-reading
+		display: flex
+
+	// 右缘放不下时（openAt 加 ctx-flip-left），音量子菜单翻到左侧
+	&.ctx-flip-left .ctx-submenu
+		left: auto
+		right: 100%
+
+// 菜单项：图标固定宽度 + 文字；文字色等同 .text-75 惯例（black/75 ↔ white/75）
+.ctx-item
+	display: flex
+	align-items: center
+	gap: 0.5rem
+	width: calc(100% - 0.5rem)
+	margin: 0 0.25rem
+	padding: 0.375rem 0.625rem
+	border-radius: 0.375rem
+	font-size: 0.875rem
+	line-height: 1.25rem
+	color: rgba(0, 0, 0, 0.75)
+	text-align: left
+	cursor: pointer
+	background: transparent
+
+	&:hover
+		background: var(--btn-regular-bg-hover)
+
+	.ctx-icon
+		width: 1.125rem
+		height: 1.125rem
+		flex-shrink: 0
+
+:global(.dark) .ctx-item
+	color: rgba(255, 255, 255, 0.75)
+
+// 分隔线：变量色随主题切换
+.ctx-divider
+	height: 1px
+	margin: 0.25rem 0.5rem
+	background: var(--line-divider)
+
+// 音量二级子菜单：绝对定位、默认隐藏、hover 展开
+.ctx-has-submenu
+	position: relative
+	cursor: default
+
+	.ctx-submenu
+		display: none
+		position: absolute
+		top: -0.375rem
+		left: 100%
+		width: 11rem
+		padding: 0.375rem
+		border-radius: 0.5rem
+		background: var(--card-bg)
+		border: 1px solid var(--line-divider)
+		box-shadow: var(--shadow-button)
+
+	&:hover .ctx-submenu
+		display: block
+
+.ctx-subitem
+	display: flex
+	align-items: center
+	gap: 0.5rem
+	width: 100%
+	padding: 0.375rem 0.625rem
+	border-radius: 0.375rem
+	font-size: 0.875rem
+	color: rgba(0, 0, 0, 0.75)
+	cursor: pointer
+	background: transparent
+
+	&:hover
+		background: var(--btn-regular-bg-hover)
+
+:global(.dark) .ctx-subitem
+	color: rgba(255, 255, 255, 0.75)
+
+// 音量滑块：accent-color 走主题色，不套菜单项背景
+input[type="range"][data-action="music-volume-slider"]
+	width: 100%
+	margin: 0.25rem 0
+	accent-color: var(--primary)
+	cursor: pointer
+
+.ctx-volume-value
+	display: block
+	font-size: 0.75rem
+	text-align: right
+	color: rgba(0, 0, 0, 0.75)
+
+:global(.dark) .ctx-volume-value
+	color: rgba(255, 255, 255, 0.75)
+
+// 复制成功提示条：卡片底色 + 按钮阴影，文字色同 .text-75 惯例
+#ctx-toast
+	background: var(--card-bg)
+	color: rgba(0, 0, 0, 0.75)
+	box-shadow: var(--shadow-button)
+
+:global(.dark) #ctx-toast
+	color: rgba(255, 255, 255, 0.75)
+</style>

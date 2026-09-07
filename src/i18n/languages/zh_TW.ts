@@ -69,6 +69,8 @@ export const zh_TW: Translation = {
 	[Key.musicCover]: "封面",
 	[Key.musicNoCover]: "暫無封面",
 	[Key.musicAudioPlayer]: "音頻播放器",
+	[Key.musicMute]: "靜音",
+	[Key.musicUnmute]: "取消靜音",
 
 	// 公告欄
 	[Key.announcement]: "公告",
@@ -535,4 +537,19 @@ export const zh_TW: Translation = {
 	[Key.goInvalidLink]: "鏈接無效或已損壞，無法跳轉",
 	[Key.goWarning]: "請自行確認目標鏈接的安全性後再繼續訪問",
 	[Key.goBack]: "返回",
+
+	// 右鍵選單
+	[Key.contextMenuBack]: "上一頁",
+	[Key.contextMenuForward]: "下一頁",
+	[Key.contextMenuReload]: "重新整理",
+	[Key.contextMenuToggleTheme]: "日夜切換",
+	[Key.contextMenuReadingMode]: "閱讀模式",
+	[Key.contextMenuBackToComment]: "直達評論",
+	[Key.contextMenuBackToTop]: "回到頂部",
+	[Key.contextMenuCopyUrl]: "複製本文連結",
+	[Key.contextMenuCopySelection]: "複製所選文字",
+	[Key.contextMenuSearchSelection]: "搜尋所選文字",
+	[Key.contextMenuOpenLink]: "在新視窗開啟",
+	[Key.contextMenuOpenImage]: "在新視窗開啟圖片",
+	[Key.contextMenuCopyImage]: "複製圖片位址",
 };

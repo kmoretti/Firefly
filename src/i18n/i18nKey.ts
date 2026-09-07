@@ -95,6 +95,8 @@ enum I18nKey {
 	musicCover = "musicCover",
 	musicNoCover = "musicNoCover",
 	musicAudioPlayer = "musicAudioPlayer",
+	musicMute = "musicMute",
+	musicUnmute = "musicUnmute",
 
 	themeColor = "themeColor",
 
@@ -528,6 +530,21 @@ enum I18nKey {
 	goInvalidLink = "goInvalidLink",
 	goWarning = "goWarning",
 	goBack = "goBack",
+
+	// 右键菜单
+	contextMenuBack = "contextMenuBack",
+	contextMenuForward = "contextMenuForward",
+	contextMenuReload = "contextMenuReload",
+	contextMenuToggleTheme = "contextMenuToggleTheme",
+	contextMenuReadingMode = "contextMenuReadingMode",
+	contextMenuBackToComment = "contextMenuBackToComment",
+	contextMenuBackToTop = "contextMenuBackToTop",
+	contextMenuCopyUrl = "contextMenuCopyUrl",
+	contextMenuCopySelection = "contextMenuCopySelection",
+	contextMenuSearchSelection = "contextMenuSearchSelection",
+	contextMenuOpenLink = "contextMenuOpenLink",
+	contextMenuOpenImage = "contextMenuOpenImage",
+	contextMenuCopyImage = "contextMenuCopyImage",
 }
 
 export default I18nKey;
