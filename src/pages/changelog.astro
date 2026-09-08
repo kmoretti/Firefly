@@ -200,6 +200,22 @@ const detailHint = i18n(I18nKey.changelogDetailHint);
 		border-radius: 0.75rem;
 		border: 1px solid var(--line-divider);
 		background: var(--card-bg);
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease,
+			border-color 0.2s ease;
+	}
+	.cl-entry-card:hover {
+		transform: translateY(-1px);
+		border-color: color-mix(in srgb, var(--primary) 45%, var(--line-divider));
+		box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 12%, transparent);
+	}
+	.cl-entry-card[open] {
+		border-color: color-mix(in srgb, var(--primary) 45%, var(--line-divider));
+		box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 12%, transparent);
+	}
+	.cl-entry-card[open]:hover {
+		transform: none;
 	}
 	.cl-entry-summary {
 		display: flex;
@@ -224,6 +240,7 @@ const detailHint = i18n(I18nKey.changelogDetailHint);
 	}
 	.cl-entry-card[open] .cl-entry-chevron {
 		transform: rotate(180deg);
+		color: var(--primary);
 	}
 	.cl-entry-detail {
 		padding: 0 1rem 1rem;
