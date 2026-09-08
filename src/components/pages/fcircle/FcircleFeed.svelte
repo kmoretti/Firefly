@@ -230,30 +230,30 @@ onMount(() => {
 	{#if showRandom && randomArticle}
 		<section class="card-base mt-4 px-6 py-6">
 			<h2 class="text-base font-bold text-neutral-900 dark:text-neutral-100">{randomTitle}</h2>
-			<div class="mt-3">
-				<a
-					href={randomArticle.link}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="line-clamp-2 text-lg font-bold text-neutral-900 transition-colors dark:text-neutral-100 hover:text-(--primary)"
-				>
-					{randomArticle.title}
-				</a>
-				<p class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+			<a
+				href={randomArticle.link}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mt-3 line-clamp-2 text-lg font-bold text-neutral-900 transition-colors dark:text-neutral-100 hover:text-(--primary)"
+			>
+				{randomArticle.title}
+			</a>
+			<div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+				<p class="min-w-0 text-xs text-neutral-500 dark:text-neutral-400">
 					✍️ {randomArticle.author}
 					{#if randomArticle.created}
 						· 📅 {randomArticle.created.substring(0, 10)}
 					{/if}
 				</p>
-			</div>
-			<div class="mt-4 flex flex-wrap items-center gap-3">
-				<button type="button" class="btn-regular rounded-lg px-4 py-2 text-sm" onclick={pickRandom}>{randomNext}</button>
-				<a
-					href={randomArticle.link}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="btn-regular rounded-lg px-4 py-2 text-sm text-(--primary)"
-				>{randomRead}</a>
+				<div class="flex shrink-0 items-center gap-3">
+					<button type="button" class="btn-regular rounded-lg px-4 py-2 text-sm" onclick={pickRandom}>{randomNext}</button>
+					<a
+						href={randomArticle.link}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="flex items-center justify-center rounded-lg bg-(--primary) px-4 py-2 text-sm font-medium text-white transition-colors duration-150 dark:text-black/75"
+					>{randomRead}</a>
+				</div>
 			</div>
 		</section>
 	{/if}
