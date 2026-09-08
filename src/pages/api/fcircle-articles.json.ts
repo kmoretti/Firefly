@@ -1,5 +1,9 @@
 import { fcircleConfig } from "@/config";
-import { fetchJson, normalizeArticles } from "@/utils/fcircle-adapter";
+import {
+	normalizeArticles,
+	normalizeStats,
+	fetchJson,
+} from "@/utils/fcircle-adapter";
 
 export async function GET(): Promise<Response> {
 	if (!fcircleConfig.enable || !fcircleConfig.articleApiUrl) {
@@ -15,7 +19,8 @@ export async function GET(): Promise<Response> {
 			fcircleConfig.timeoutMs,
 		);
 		const articles = normalizeArticles(raw);
-		return new Response(JSON.stringify(articles), {
+		const stats = normalizeStats(raw);
+		return new Response(JSON.stringify({ stats, articles }), {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",
 				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",

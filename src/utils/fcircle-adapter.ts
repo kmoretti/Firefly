@@ -22,6 +22,30 @@ export type FcircleLinkStatus = {
 	staleDays?: number | null;
 };
 
+export type FcircleStats = {
+	friendsNum: number;
+	activeNum: number;
+	articleNum: number;
+	errorNum: number;
+	lastUpdatedTime?: string;
+};
+
+export function normalizeStats(raw: unknown): FcircleStats | undefined {
+	if (!raw || typeof raw !== "object") return undefined;
+	const stat = (raw as Record<string, unknown>).statistical_data;
+	if (!stat || typeof stat !== "object") return undefined;
+	const record = stat as Record<string, unknown>;
+	const num = (value: unknown): number =>
+		typeof value === "number" && Number.isFinite(value) ? value : 0;
+	return {
+		friendsNum: num(record.friends_num),
+		activeNum: num(record.active_num),
+		articleNum: num(record.article_num),
+		errorNum: num(record.error_num),
+		lastUpdatedTime: safeString(record.last_updated_time),
+	};
+}
+
 function safeString(value: unknown): string | undefined {
 	return typeof value === "string" ? value.trim() : undefined;
 }
