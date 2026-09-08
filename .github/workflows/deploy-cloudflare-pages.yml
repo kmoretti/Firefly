@@ -44,6 +44,7 @@ jobs:
       - name: Build site
         env:
           PUBLIC_QWEATHER_KEY: ${{ secrets.PUBLIC_QWEATHER_KEY }}
+          TENCENT_MAPS_KEY: ${{ secrets.TENCENT_MAPS_KEY }}
         run: pnpm build
 
       - name: Create Pages project if needed

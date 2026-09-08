@@ -14,6 +14,7 @@ export function fetchWithDedup<T>(url: string): Promise<T> {
 		return r.json() as Promise<T>;
 	});
 	pendingFetches.set(url, promise);
-	promise.finally(() => pendingFetches.delete(url));
+	// 清理缓存用的派生 promise 自行接住 rejection，避免失败时产生未处理的 Promise 拒绝
+	promise.finally(() => pendingFetches.delete(url)).catch(() => {});
 	return promise;
 }

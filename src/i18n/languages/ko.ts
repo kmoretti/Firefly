@@ -448,6 +448,18 @@ export const ko: Translation = {
 	[Key.siteStatsDaysAgo]: "{days}일 전",
 	[Key.siteStatsDays]: "{days}일",
 	[Key.today]: "오늘",
+	[Key.umamiStats]: "통계",
+	[Key.umamiStatsTotalPageviews]: "총 조회수",
+	[Key.umamiStatsTotalVisits]: "방문 수",
+	[Key.umamiStatsTotalVisitors]: "방문자 수",
+	[Key.umamiStatsTodayPageviews]: "오늘의 조회수",
+	[Key.umamiStatsTodayVisits]: "오늘의 방문 수",
+	[Key.umamiStatsOnline]: "접속 중",
+	[Key.welcomeToastLoading]: "불러오는 중...",
+	[Key.welcomeToastGreeting]: "{location}에서 오신 방문자님, 안녕하세요!",
+	[Key.welcomeToastGreetingFallback]: "안녕하세요!",
+	[Key.welcomeToastUnknownLocation]: "알 수 없는 위치",
+	[Key.welcomeToastSubtitle]: "{site}에 오신 것을 환영합니다~",
 
 	// Site Info
 	[Key.siteInfo]: "사이트 정보",
@@ -560,4 +572,5 @@ export const ko: Translation = {
 	[Key.contextMenuOpenLink]: "새 탭에서 열기",
 	[Key.contextMenuOpenImage]: "이미지를 새 탭에서 열기",
 	[Key.contextMenuCopyImage]: "이미지 URL 복사",
+	[Key.contextMenuToggleFps]: "FPS 표시 전환",
 };

@@ -7,6 +7,7 @@ export type ContextMenuActionType =
 	| "back-to-comment"
 	| "copy-url"
 	| "toggle-theme"
+	| "toggle-fps"
 	| "reading-mode"
 	| "music-toggle-play"
 	| "music-prev"

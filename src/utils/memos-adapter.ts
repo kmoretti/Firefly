@@ -185,8 +185,44 @@ export async function fetchMemos(
 
 	const promise = fetchMemosInternal(memosApiUrl, options);
 	pendingRequests.set(cacheKey, promise);
-	promise.finally(() => pendingRequests.delete(cacheKey));
+	// 清理缓存用的派生 promise 必须自行接住 rejection：否则上游失败时会触发
+	// UnhandledRejection，dev 下 Astro 会把错误推送到浏览器全屏遮罩，阻塞页面交互
+	promise.finally(() => pendingRequests.delete(cacheKey)).catch(() => {});
 	return promise;
+}
+
+/** 超时/中止错误不重试：上游响应过慢，重试只会成倍拖长代理端点等待时间 */
+function isTimeoutError(error: unknown): boolean {
+	return (
+		error instanceof DOMException &&
+		(error.name === "TimeoutError" || error.name === "AbortError")
+	);
+}
+
+/**
+ * 单页请求，带瞬时网络故障自动重试
+ * 本地测试时到上游的 TLS 握手偶发被掐断（fetch failed / socket disconnected），
+ * 快速退避重试通常即可恢复；HTTP 4xx/5xx 不属于网络故障，由调用方处理
+ */
+async function fetchMemosPage(url: string): Promise<Response> {
+	const maxAttempts = 3;
+	for (let attempt = 1; ; attempt++) {
+		try {
+			return await fetch(url, {
+				headers: { Accept: "application/json" },
+				// 单页请求超时，避免上游无响应时代理端点无限挂起
+				signal: AbortSignal.timeout(15_000),
+			});
+		} catch (error) {
+			if (attempt >= maxAttempts || isTimeoutError(error)) throw error;
+			console.warn(
+				`[Memos API] 网络瞬时故障（第 ${attempt}/${maxAttempts - 1} 次重试）: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			);
+			await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+		}
+	}
 }
 
 async function fetchMemosInternal(
@@ -218,11 +254,7 @@ async function fetchMemosInternal(
 			url.searchParams.set("pageToken", pageToken);
 		}
 
-		const response = await fetch(url.toString(), {
-			headers: { Accept: "application/json" },
-			// 单页请求超时，避免上游无响应时代理端点无限挂起
-			signal: AbortSignal.timeout(15_000),
-		});
+		const response = await fetchMemosPage(url.toString());
 
 		if (!response.ok) {
 			const errorText = await response.text().catch(() => "");

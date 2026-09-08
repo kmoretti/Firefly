@@ -442,6 +442,18 @@ export const zh_TW: Translation = {
 	[Key.siteStatsDaysAgo]: "{days} 天前",
 	[Key.siteStatsDays]: "{days} 天",
 	[Key.today]: "今天",
+	[Key.umamiStats]: "統計",
+	[Key.umamiStatsTotalPageviews]: "總瀏覽量",
+	[Key.umamiStatsTotalVisits]: "訪問數",
+	[Key.umamiStatsTotalVisitors]: "遊客數",
+	[Key.umamiStatsTodayPageviews]: "今日瀏覽",
+	[Key.umamiStatsTodayVisits]: "今日訪問",
+	[Key.umamiStatsOnline]: "正在瀏覽",
+	[Key.welcomeToastLoading]: "正在載入...",
+	[Key.welcomeToastGreeting]: "你好，來自{location}的朋友",
+	[Key.welcomeToastGreetingFallback]: "你好呀！",
+	[Key.welcomeToastUnknownLocation]: "未知位置",
+	[Key.welcomeToastSubtitle]: "歡迎來到 {site}~",
 
 	// 站點資訊
 	[Key.siteInfo]: "站點資訊",
@@ -552,4 +564,5 @@ export const zh_TW: Translation = {
 	[Key.contextMenuOpenLink]: "在新視窗開啟",
 	[Key.contextMenuOpenImage]: "在新視窗開啟圖片",
 	[Key.contextMenuCopyImage]: "複製圖片位址",
+	[Key.contextMenuToggleFps]: "FPS 顯隱",
 };

@@ -65,7 +65,9 @@ export type {
 	FontDefinition,
 	FontSelectionConfig,
 } from "../types/fontConfig"; // 字体类型定义
+export type { FpsConfig } from "../types/fpsConfig";
 export type { WelcomeClockConfig } from "../types/welcomeClockConfig";
+export type { WelcomeToastConfig } from "../types/welcomeToastConfig"; // 欢迎 IP 提示类型定义
 // 功能配置
 export { aboutConfig } from "./aboutConfig";
 export { aiSummaryConfig } from "./aiSummaryConfig"; // AI 摘要配置
@@ -86,6 +88,7 @@ export { fcircleConfig } from "./fcircleConfig";
 export { flipClockConfig } from "./flipClockConfig"; // 翻页时钟组件配置
 export { fontConfig, fontsList } from "./fontConfig"; // 字体配置
 export { footerConfig } from "./footerConfig"; // 页脚配置
+export { fpsConfig } from "./fpsConfig"; // FPS 帧率监视器配置
 export {
 	friendsPageConfig,
 	getEnabledFriends,
@@ -101,9 +104,11 @@ export { navBarConfig, navBarSearchConfig } from "./navBarConfig"; // 导航栏�
 export { live2dWidgetConfig, spineModelConfig } from "./pioConfig"; // 看板娘配置
 export { plantumlConfig } from "./plantumlConfig"; // PlantUML 图表配置
 export { profileConfig } from "./profileConfig"; // 用户资料配置
+export { serviceWorkerConfig } from "./serviceWorkerConfig"; // Service Worker（swpp）缓存配置
 // 布局配置
 export { sidebarLayoutConfig } from "./sidebarConfig"; // 侧边栏布局配置
 // 核心配置
 export { siteConfig } from "./siteConfig"; // 站点基础配置
 export { sponsorConfig } from "./sponsorConfig"; // 打赏配置
 export { welcomeClockConfig } from "./welcomeClockConfig"; // 欢迎时钟组件配置
+export { welcomeToastConfig } from "./welcomeToastConfig"; // 欢迎 IP 提示组件配置

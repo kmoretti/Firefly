@@ -436,6 +436,18 @@ enum I18nKey {
 	siteStatsDaysAgo = "siteStatsDaysAgo",
 	siteStatsDays = "siteStatsDays",
 	today = "today",
+	umamiStats = "umamiStats",
+	umamiStatsTotalPageviews = "umamiStatsTotalPageviews",
+	umamiStatsTotalVisits = "umamiStatsTotalVisits",
+	umamiStatsTotalVisitors = "umamiStatsTotalVisitors",
+	umamiStatsTodayPageviews = "umamiStatsTodayPageviews",
+	umamiStatsTodayVisits = "umamiStatsTodayVisits",
+	umamiStatsOnline = "umamiStatsOnline",
+	welcomeToastLoading = "welcomeToastLoading",
+	welcomeToastGreeting = "welcomeToastGreeting",
+	welcomeToastGreetingFallback = "welcomeToastGreetingFallback",
+	welcomeToastUnknownLocation = "welcomeToastUnknownLocation",
+	welcomeToastSubtitle = "welcomeToastSubtitle",
 
 	// 站点信息
 	siteInfo = "siteInfo",
@@ -545,6 +557,7 @@ enum I18nKey {
 	contextMenuOpenLink = "contextMenuOpenLink",
 	contextMenuOpenImage = "contextMenuOpenImage",
 	contextMenuCopyImage = "contextMenuCopyImage",
+	contextMenuToggleFps = "contextMenuToggleFps",
 }
 
 export default I18nKey;

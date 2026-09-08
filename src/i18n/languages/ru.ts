@@ -452,6 +452,18 @@ export const ru: Translation = {
 	[Key.siteStatsDaysAgo]: "{days} дней назад",
 	[Key.siteStatsDays]: "{days} дней",
 	[Key.today]: "Сегодня",
+	[Key.umamiStats]: "Статистика",
+	[Key.umamiStatsTotalPageviews]: "Всего просмотров",
+	[Key.umamiStatsTotalVisits]: "Визиты",
+	[Key.umamiStatsTotalVisitors]: "Посетители",
+	[Key.umamiStatsTodayPageviews]: "Просмотры за сегодня",
+	[Key.umamiStatsTodayVisits]: "Визиты за сегодня",
+	[Key.umamiStatsOnline]: "Сейчас на сайте",
+	[Key.welcomeToastLoading]: "Загрузка...",
+	[Key.welcomeToastGreeting]: "Привет, друг из {location}!",
+	[Key.welcomeToastGreetingFallback]: "Привет!",
+	[Key.welcomeToastUnknownLocation]: "Неизвестное место",
+	[Key.welcomeToastSubtitle]: "Добро пожаловать на {site}~",
 
 	// Информация о сайте
 	[Key.siteInfo]: "Информация о сайте",
@@ -566,4 +578,5 @@ export const ru: Translation = {
 	[Key.contextMenuOpenLink]: "Открыть в новой вкладке",
 	[Key.contextMenuOpenImage]: "Открыть изображение в новой вкладке",
 	[Key.contextMenuCopyImage]: "Копировать адрес изображения",
+	[Key.contextMenuToggleFps]: "Показ FPS",
 };

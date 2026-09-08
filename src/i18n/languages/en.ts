@@ -451,6 +451,18 @@ export const en: Translation = {
 	[Key.siteStatsDaysAgo]: "{days} days ago",
 	[Key.siteStatsDays]: "{days} days",
 	[Key.today]: "Today",
+	[Key.umamiStats]: "Statistics",
+	[Key.umamiStatsTotalPageviews]: "Total Pageviews",
+	[Key.umamiStatsTotalVisits]: "Visits",
+	[Key.umamiStatsTotalVisitors]: "Visitors",
+	[Key.umamiStatsTodayPageviews]: "Today's Views",
+	[Key.umamiStatsTodayVisits]: "Today's Visits",
+	[Key.umamiStatsOnline]: "Online Now",
+	[Key.welcomeToastLoading]: "Loading...",
+	[Key.welcomeToastGreeting]: "Hello, friend from {location}!",
+	[Key.welcomeToastGreetingFallback]: "Hello there!",
+	[Key.welcomeToastUnknownLocation]: "Unknown location",
+	[Key.welcomeToastSubtitle]: "Welcome to {site}~",
 
 	// Site Info
 	[Key.siteInfo]: "Site Info",
@@ -563,4 +575,5 @@ export const en: Translation = {
 	[Key.contextMenuOpenLink]: "Open in New Tab",
 	[Key.contextMenuOpenImage]: "Open Image in New Tab",
 	[Key.contextMenuCopyImage]: "Copy Image URL",
+	[Key.contextMenuToggleFps]: "Toggle FPS",
 };

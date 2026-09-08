@@ -1,5 +1,7 @@
 import type { ContextMenuConfig } from "@/types/contextMenuConfig";
 
+import { fpsConfig } from "./fpsConfig";
+
 export const contextMenuConfig: ContextMenuConfig = {
 	enable: true,
 	minWidth: 1024,
@@ -30,6 +32,7 @@ export const contextMenuConfig: ContextMenuConfig = {
 		{ action: "music-next" },
 		{ action: "music-volume" },
 		{ action: "toggle-theme", divider: true },
+		{ action: "toggle-fps", show: fpsConfig.enable },
 		{ action: "reading-mode" },
 		{ action: "back-to-comment" },
 		{ action: "back-to-top" },

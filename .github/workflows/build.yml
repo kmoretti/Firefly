@@ -64,4 +64,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Astro Build
+        env:
+          TENCENT_MAPS_KEY: ${{ secrets.TENCENT_MAPS_KEY }}
         run: pnpm astro build

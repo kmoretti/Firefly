@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import { contextMenuConfig } from "@/config";
+import { DARK_MODE, LIGHT_MODE, SYSTEM_MODE } from "@/constants/constants";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 
@@ -15,6 +16,54 @@ const visibleItems = contextMenuConfig.items.filter(
 	(item) => item.show !== false,
 );
 
+// ── 折叠识别：基于可见项序列生成渲染计划（行 / 组 / 单项三类节点）──
+// 连续性被配置变化（删项、插项、调序、show:false）打断时，未落入任何区间的项
+// 逐项渲染，行为与折叠前的平铺布局完全一致
+type MenuItemConfig = (typeof contextMenuConfig.items)[number];
+
+type PlanNode =
+	| { kind: "item"; item: MenuItemConfig }
+	| { kind: "navrow"; dividerBefore: boolean; dividerAfter: boolean }
+	| { kind: "music"; items: MenuItemConfig[] };
+
+const isMusicAction = (item: MenuItemConfig) =>
+	typeof item.action === "string" && item.action.startsWith("music-");
+
+const buildRenderPlan = (items: MenuItemConfig[]): PlanNode[] => {
+	const plan: PlanNode[] = [];
+	let i = 0;
+	// 起始三元组 后退 → 前进 → 刷新 → 单行导航；reload 的 divider 移到行后
+	if (
+		items[0]?.action === "history-back" &&
+		items[1]?.action === "history-forward" &&
+		items[2]?.action === "reload"
+	) {
+		plan.push({
+			kind: "navrow",
+			dividerBefore: items[0].divider ?? false,
+			dividerAfter: items[2].divider ?? false,
+		});
+		i = 3;
+	}
+	while (i < items.length) {
+		if (isMusicAction(items[i])) {
+			// 连续 music-* 区间（长度 ≥ 2）→ 单个「音乐」父级子菜单
+			let j = i;
+			while (j < items.length && isMusicAction(items[j])) j++;
+			if (j - i >= 2) {
+				plan.push({ kind: "music", items: items.slice(i, j) });
+				i = j;
+				continue;
+			}
+		}
+		plan.push({ kind: "item", item: items[i] });
+		i++;
+	}
+	return plan;
+};
+
+const renderPlan = buildRenderPlan(visibleItems);
+
 /** action → 默认 i18n 文案 */
 const actionLabelMap: Record<string, string> = {
 	"history-back": i18n(I18nKey.contextMenuBack),
@@ -24,6 +73,7 @@ const actionLabelMap: Record<string, string> = {
 	"back-to-comment": i18n(I18nKey.contextMenuBackToComment),
 	"copy-url": i18n(I18nKey.contextMenuCopyUrl),
 	"toggle-theme": i18n(I18nKey.contextMenuToggleTheme),
+	"toggle-fps": i18n(I18nKey.contextMenuToggleFps),
 	"reading-mode": i18n(I18nKey.contextMenuReadingMode),
 	"music-prev": i18n(I18nKey.musicPrev),
 	"music-next": i18n(I18nKey.musicNext),
@@ -39,11 +89,19 @@ const actionIconMap: Record<string, string> = {
 	"back-to-comment": "mingcute:comment-line",
 	"copy-url": "material-symbols:link",
 	"toggle-theme": "material-symbols:wb-sunny-outline-rounded",
+	"toggle-fps": "material-symbols:speed",
 	"reading-mode": "material-symbols:auto-stories",
 	"music-toggle-play": "material-symbols:play-arrow-rounded",
 	"music-prev": "material-symbols:skip-previous-rounded",
 	"music-next": "material-symbols:skip-next-rounded",
 	"music-volume": "material-symbols:volume-up-rounded",
+};
+
+/** 主题三态图标：按 stored 模式（亮色/暗色/跟随系统）切换 */
+const themeIconMap: Record<string, string> = {
+	[LIGHT_MODE]: "material-symbols:wb-sunny-outline-rounded",
+	[DARK_MODE]: "material-symbols:dark-mode-outline-rounded",
+	[SYSTEM_MODE]: "material-symbols:brightness-auto-outline-rounded",
 };
 
 // 上下文扩展区（复制选中文本 / 搜索 / 链接 / 图片）固定文案与图标
@@ -57,6 +115,8 @@ const playLabel = i18n(I18nKey.musicPlay);
 const pauseLabel = i18n(I18nKey.musicPause);
 const muteLabel = i18n(I18nKey.musicMute);
 const unmuteLabel = i18n(I18nKey.musicUnmute);
+// 音乐父级子菜单的父项文案（"音乐"）
+const musicGroupLabel = i18n(I18nKey.music);
 const toastCopiedText = i18n(I18nKey.copied);
 ---
 
@@ -120,87 +180,246 @@ const toastCopiedText = i18n(I18nKey.copied);
 					<div class="ctx-divider ctx-context-divider hidden" role="separator" />
 				</div>
 
-				{visibleItems.map((item) => (
-					<>
-						{item.divider && <div class="ctx-divider" role="separator" />}
-						{item.action === "music-toggle-play" ? (
-							<button
-								type="button"
+				{renderPlan.map((node) => (
+				<>
+					{node.kind === "navrow" ? (
+						<>
+							{/* 单行导航：后退 | 前进 | 刷新 三个等宽图标格（行为与图标不变） */}
+							{node.dividerBefore && (
+								<div class="ctx-divider" role="separator" />
+							)}
+							<div class="ctx-nav-row" role="group">
+								<button
+									type="button"
+									role="menuitem"
+									class="ctx-nav-cell"
+									data-action="history-back"
+									title={actionLabelMap["history-back"]}
+									aria-label={actionLabelMap["history-back"]}
+								>
+									<Icon name="material-symbols:history-rounded" class="ctx-icon" />
+								</button>
+								<button
+									type="button"
+									role="menuitem"
+									class="ctx-nav-cell"
+									data-action="history-forward"
+									title={actionLabelMap["history-forward"]}
+									aria-label={actionLabelMap["history-forward"]}
+								>
+									<Icon name="material-symbols:arrow-forward-rounded" class="ctx-icon" />
+								</button>
+								<button
+									type="button"
+									role="menuitem"
+									class="ctx-nav-cell"
+									data-action="reload"
+									title={actionLabelMap["reload"]}
+									aria-label={actionLabelMap["reload"]}
+								>
+									<Icon name="material-symbols:refresh-rounded" class="ctx-icon" />
+								</button>
+							</div>
+							{/* reload 原有的 divider 移到导航行之后渲染 */}
+							{node.dividerAfter && (
+								<div class="ctx-divider" role="separator" />
+							)}
+						</>
+					) : node.kind === "music" ? (
+						<>
+							{/* 音乐父级子菜单：连续 music-* 区间折叠为单个父项；区间内音量扁平化（无第三级） */}
+							{node.items[0].divider && (
+								<div class="ctx-divider" role="separator" />
+							)}
+							<div
+								class="ctx-item ctx-has-submenu ctx-need-music"
 								role="menuitem"
-								class="ctx-item ctx-need-music"
-								data-action="music-toggle-play"
+								aria-haspopup="true"
+								aria-expanded="false"
 							>
-								{/* 播放/暂停双标签：脚本按 isPlaying 切换（暂停态默认可见） */}
-								<span class="ctx-when-paused inline-flex items-center gap-2">
-									<Icon name="material-symbols:play-arrow-rounded" class="ctx-icon" />
-									<span>{playLabel}</span>
-								</span>
-								<span class="ctx-when-playing hidden inline-flex items-center gap-2">
-									<Icon name="material-symbols:pause-rounded" class="ctx-icon" />
-									<span>{pauseLabel}</span>
-								</span>
-							</button>
-						) : item.action === "music-volume" ? (
-							<div class="ctx-item ctx-has-submenu ctx-need-music" role="menuitem" aria-haspopup="true">
-								<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
-								<span>{item.label ?? actionLabelMap["music-volume"]}</span>
-								{/* 二级音量子菜单：hover 展开；menu 根加 ctx-flip-left 时翻到左侧 */}
+								<Icon name="material-symbols:music-note-rounded" class="ctx-icon" />
+								<span>{musicGroupLabel}</span>
+								{/* 二级音乐子菜单：hover/点击 展开；menu 根加 ctx-flip-left 时翻到左侧 */}
 								<div class="ctx-submenu">
-									{/* 静音/取消静音双标签：脚本按 isMuted 切换（未静音态默认可见） */}
-									<button
-										type="button"
-										role="menuitem"
-										class="ctx-subitem"
-										data-action="music-mute"
-									>
-										<span class="ctx-when-unmuted inline-flex items-center gap-2">
-											<Icon name="material-symbols:volume-off-rounded" class="ctx-icon" />
-											<span>{muteLabel}</span>
-										</span>
-										<span class="ctx-when-muted hidden inline-flex items-center gap-2">
-											<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
-											<span>{unmuteLabel}</span>
-										</span>
-									</button>
-									<input
-										type="range"
-										min="0"
-										max="100"
-										step="1"
-										data-action="music-volume-slider"
-										aria-label={i18n(I18nKey.musicVolume)}
-									/>
-									<span class="ctx-volume-value" data-role="volume-value">70%</span>
+									{node.items.map((item, idx) => (
+										<>
+											{/* 区间内非首项自带 divider 时保留为子菜单内分隔（volume 的分隔由扁平化块自带） */}
+											{idx > 0 &&
+												item.divider &&
+												item.action !== "music-volume" && (
+													<div class="ctx-divider" role="separator" />
+												)}
+											{item.action === "music-toggle-play" ? (
+												<button
+													type="button"
+													role="menuitem"
+													class="ctx-subitem"
+													data-action="music-toggle-play"
+												>
+													{/* 播放/暂停双标签：脚本按 isPlaying 切换（暂停态默认可见） */}
+													<span class="ctx-when-paused inline-flex items-center gap-2">
+														<Icon name="material-symbols:play-arrow-rounded" class="ctx-icon" />
+														<span>{playLabel}</span>
+													</span>
+													<span class="ctx-when-playing hidden inline-flex items-center gap-2">
+														<Icon name="material-symbols:pause-rounded" class="ctx-icon" />
+														<span>{pauseLabel}</span>
+													</span>
+												</button>
+											) : item.action === "music-volume" ? (
+												<>
+													{/* 音量扁平化：子分隔线 + 静音 + 滑块 + 百分比直接内联进子菜单 */}
+													<div class="ctx-divider" role="separator" />
+													<button
+														type="button"
+														role="menuitem"
+														class="ctx-subitem"
+														data-action="music-mute"
+													>
+														{/* 静音/取消静音双标签：脚本按 isMuted 切换（未静音态默认可见） */}
+														<span class="ctx-when-unmuted inline-flex items-center gap-2">
+															<Icon name="material-symbols:volume-off-rounded" class="ctx-icon" />
+															<span>{muteLabel}</span>
+														</span>
+														<span class="ctx-when-muted hidden inline-flex items-center gap-2">
+															<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
+															<span>{unmuteLabel}</span>
+														</span>
+													</button>
+													<input
+														type="range"
+														min="0"
+														max="100"
+														step="1"
+														data-action="music-volume-slider"
+														aria-label={i18n(I18nKey.musicVolume)}
+													/>
+													<span class="ctx-volume-value" data-role="volume-value">70%</span>
+												</>
+											) : (
+												<button
+													type="button"
+													role="menuitem"
+													class="ctx-subitem"
+													data-action={item.action}
+												>
+													<Icon
+														name={item.icon ?? actionIconMap[item.action ?? ""] ?? "material-symbols:open-in-new"}
+														class="ctx-icon"
+													/>
+													<span>
+														{item.label ??
+															(item.action ? actionLabelMap[item.action] : "")}
+													</span>
+												</button>
+											)}
+										</>
+									))}
 								</div>
 							</div>
-						) : (
-							<button
-								type="button"
-								role="menuitem"
-								class:list={[
-									"ctx-item",
-									item.action === "back-to-comment" && "ctx-need-comments",
-									item.action === "reading-mode" && "ctx-need-reading",
-									item.action?.startsWith("music-") && "ctx-need-music",
-								]}
-								data-action={item.action}
-								data-link={isCustomItem(item) ? item.link : undefined}
-								data-new-tab={isCustomItem(item) ? String(item.newTab ?? false) : undefined}
-								data-handler={isCustomItem(item) ? item.handler : undefined}
-							>
-								<Icon
-									name={item.icon ?? actionIconMap[item.action ?? ""] ?? "material-symbols:open-in-new"}
-									class="ctx-icon"
-								/>
-								<span>
-									{item.label ??
-										(item.action ? actionLabelMap[item.action] : undefined) ??
-										(isCustomItem(item) ? customFallbackLabel(item) : "")}
-								</span>
-							</button>
-						)}
-					</>
-				))}
+						</>
+					) : (
+						<>
+							{node.item.divider && <div class="ctx-divider" role="separator" />}
+							{node.item.action === "toggle-theme" ? (
+								<button
+									type="button"
+									role="menuitem"
+									class="ctx-item"
+									data-action="toggle-theme"
+								>
+									{/* 三态图标：按 stored 模式（亮色/暗色/跟随系统）切换，脚本在唤出/点击切换/theme-change 时同步 */}
+									<span class="ctx-theme-icon inline-flex" data-theme-icon={LIGHT_MODE}>
+										<Icon name={themeIconMap[LIGHT_MODE]} class="ctx-icon" />
+									</span>
+									<span class="ctx-theme-icon hidden inline-flex" data-theme-icon={DARK_MODE}>
+										<Icon name={themeIconMap[DARK_MODE]} class="ctx-icon" />
+									</span>
+									<span class="ctx-theme-icon hidden inline-flex" data-theme-icon={SYSTEM_MODE}>
+										<Icon name={themeIconMap[SYSTEM_MODE]} class="ctx-icon" />
+									</span>
+									<span>{node.item.label ?? actionLabelMap["toggle-theme"]}</span>
+								</button>
+							) : node.item.action === "music-toggle-play" ? (
+								<button
+									type="button"
+									role="menuitem"
+									class="ctx-item ctx-need-music"
+									data-action="music-toggle-play"
+								>
+									{/* 播放/暂停双标签：脚本按 isPlaying 切换（暂停态默认可见） */}
+									<span class="ctx-when-paused inline-flex items-center gap-2">
+										<Icon name="material-symbols:play-arrow-rounded" class="ctx-icon" />
+										<span>{playLabel}</span>
+									</span>
+									<span class="ctx-when-playing hidden inline-flex items-center gap-2">
+										<Icon name="material-symbols:pause-rounded" class="ctx-icon" />
+										<span>{pauseLabel}</span>
+									</span>
+								</button>
+							) : node.item.action === "music-volume" ? (
+								<div class="ctx-item ctx-has-submenu ctx-need-music" role="menuitem" aria-haspopup="true" aria-expanded="false">
+									<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
+									<span>{node.item.label ?? actionLabelMap["music-volume"]}</span>
+									{/* 二级音量子菜单：hover/点击 展开；menu 根加 ctx-flip-left 时翻到左侧 */}
+									<div class="ctx-submenu">
+										{/* 静音/取消静音双标签：脚本按 isMuted 切换（未静音态默认可见） */}
+										<button
+											type="button"
+											role="menuitem"
+											class="ctx-subitem"
+											data-action="music-mute"
+										>
+											<span class="ctx-when-unmuted inline-flex items-center gap-2">
+												<Icon name="material-symbols:volume-off-rounded" class="ctx-icon" />
+												<span>{muteLabel}</span>
+											</span>
+											<span class="ctx-when-muted hidden inline-flex items-center gap-2">
+												<Icon name="material-symbols:volume-up-rounded" class="ctx-icon" />
+												<span>{unmuteLabel}</span>
+											</span>
+										</button>
+										<input
+											type="range"
+											min="0"
+											max="100"
+											step="1"
+											data-action="music-volume-slider"
+											aria-label={i18n(I18nKey.musicVolume)}
+										/>
+										<span class="ctx-volume-value" data-role="volume-value">70%</span>
+									</div>
+								</div>
+							) : (
+								<button
+									type="button"
+									role="menuitem"
+									class:list={[
+										"ctx-item",
+										node.item.action === "back-to-comment" && "ctx-need-comments",
+										node.item.action === "reading-mode" && "ctx-need-reading",
+										node.item.action?.startsWith("music-") && "ctx-need-music",
+									]}
+									data-action={node.item.action}
+									data-link={isCustomItem(node.item) ? node.item.link : undefined}
+									data-new-tab={isCustomItem(node.item) ? String(node.item.newTab ?? false) : undefined}
+									data-handler={isCustomItem(node.item) ? node.item.handler : undefined}
+								>
+									<Icon
+										name={node.item.icon ?? actionIconMap[node.item.action ?? ""] ?? "material-symbols:open-in-new"}
+										class="ctx-icon"
+									/>
+									<span>
+										{node.item.label ??
+											(node.item.action ? actionLabelMap[node.item.action] : undefined) ??
+											(isCustomItem(node.item) ? customFallbackLabel(node.item) : "")}
+									</span>
+								</button>
+							)}
+						</>
+					)}
+				</>
+			))}
 			</nav>
 			<div
 				id="ctx-toast"
@@ -212,12 +431,8 @@ const toastCopiedText = i18n(I18nKey.copied);
 }
 
 <script>
-	import { DARK_MODE, LIGHT_MODE } from "@/constants/constants";
-	import {
-		getStoredTheme,
-		resolveTheme,
-		setTheme,
-	} from "@/utils/setting-utils";
+	import { DARK_MODE, LIGHT_MODE, SYSTEM_MODE } from "@/constants/constants";
+	import { getStoredTheme, setTheme } from "@/utils/setting-utils";
 
 	if (!(window as unknown as { __fireflyContextMenu?: boolean })
 		.__fireflyContextMenu) {
@@ -313,6 +528,15 @@ const toastCopiedText = i18n(I18nKey.copied);
 					volumeValue.textContent = `${Math.round(st.volume * 100)}%`;
 			};
 
+			// ── 主题三态图标同步：按 stored 模式（亮色/暗色/跟随系统）显示对应图标 ──
+			const syncThemeIcon = () => {
+				const stored = getStoredTheme();
+				const icons = menu?.querySelectorAll<HTMLElement>("[data-theme-icon]");
+				icons?.forEach((el) => {
+					el.classList.toggle("hidden", el.dataset.themeIcon !== stored);
+				});
+			};
+
 			// ── 开关与定位 ──
 			const isOpen = () => !menu?.classList.contains("hidden");
 
@@ -326,6 +550,11 @@ const toastCopiedText = i18n(I18nKey.copied);
 				if (!menu || !overlay) return;
 				// 先移除 hidden 量尺寸，再决定翻转方向
 				menu.classList.remove("hidden", "ctx-flip-left");
+				// 重置点击展开的子菜单，重新打开时一律收起
+				menu.querySelectorAll(".ctx-submenu-open").forEach((el) => {
+					el.classList.remove("ctx-submenu-open");
+					el.setAttribute("aria-expanded", "false");
+				});
 				menu.style.visibility = "hidden";
 				const rect = menu.getBoundingClientRect();
 				const vw = window.innerWidth;
@@ -403,6 +632,7 @@ const toastCopiedText = i18n(I18nKey.copied);
 				menu.classList.toggle("ctx-has-reading", isReadingModeAvailable());
 
 				syncMusicUi();
+				syncThemeIcon();
 				openAt(e.clientX, e.clientY);
 			});
 
@@ -422,6 +652,8 @@ const toastCopiedText = i18n(I18nKey.copied);
 			document.addEventListener("astro:page-load", onClose);
 			document.addEventListener("swup:contentReplaced", onClose);
 			document.addEventListener("swup:enable", onClose);
+			// 跟随系统期间 OS 明暗翻转时（setting-utils 派发 theme-change）刷新三态图标
+			window.addEventListener("theme-change", syncThemeIcon);
 
 			// ── action 分发（menu 事件委托）──
 			const handleAction = async (el: HTMLElement) => {
@@ -464,13 +696,25 @@ const toastCopiedText = i18n(I18nKey.copied);
 						break;
 					}
 					case "toggle-theme": {
-						// stored 可能是 system 模式：先解析出实际明暗，再取反并写入
-						const stored = getStoredTheme();
-						setTheme(
-							resolveTheme(stored) === DARK_MODE
-								? LIGHT_MODE
-								: DARK_MODE,
-						);
+					// 三态循环：亮色 → 暗色 → 跟随系统 → 亮色（stored 回退默认主题）
+					const stored = getStoredTheme();
+					const next =
+						stored === LIGHT_MODE
+							? DARK_MODE
+							: stored === DARK_MODE
+								? SYSTEM_MODE
+								: LIGHT_MODE;
+					setTheme(next);
+					syncThemeIcon();
+					break;
+				}
+					case "toggle-fps": {
+						const g = window as unknown as {
+							toggleFpsMonitor?: () => void;
+						};
+						if (typeof g.toggleFpsMonitor === "function") {
+							g.toggleFpsMonitor();
+						}
 						break;
 					}
 					case "reading-mode":
@@ -554,6 +798,13 @@ const toastCopiedText = i18n(I18nKey.copied);
 
 			menu.addEventListener("click", (e) => {
 				const el = e.target instanceof Element ? e.target : null;
+				// 点击子菜单父项本体（不在子菜单内部）：切换展开态，与悬停展开并存
+				const submenuParent = el?.closest<HTMLElement>(".ctx-has-submenu");
+				if (submenuParent && !el?.closest(".ctx-submenu")) {
+					const expanded = submenuParent.classList.toggle("ctx-submenu-open");
+					submenuParent.setAttribute("aria-expanded", String(expanded));
+					return;
+				}
 				const actionable = el?.closest<HTMLElement>("[data-action]");
 				if (!actionable || !menu) return;
 				// 滑块由 input 事件单独处理
@@ -583,6 +834,14 @@ const toastCopiedText = i18n(I18nKey.copied);
 // 菜单本体挂 card-base（背景/阴影随 .dark 自动切换）；此处只做布局与状态样式
 #context-menu
 	user-select: none
+	// card-base 自带 overflow-hidden（为卡片圆角裁剪设计），会裁掉定位在盒外
+	// （left: 100%）的二级子菜单；菜单项均在盒内留白渲染，放开裁剪无副作用
+	overflow: visible
+
+	// Tailwind v4 中 inline-flex 等显示类会覆盖同元素上的 hidden（display:none），
+	// 导致播放/暂停、静音/取消静音、三态主题图标等双标签同时可见；此处强制生效
+	.hidden
+		display: none !important
 
 	// 上下文扩展区显隐：默认全隐藏，按 menu 根上的 show-* 标记类放行
 	// 标记类动态加在菜单根元素自身上，启用规则必须用 & 前缀（&.show-* / &.ctx-has-*），
@@ -656,16 +915,46 @@ const toastCopiedText = i18n(I18nKey.copied);
 :global(.dark) .ctx-item
 	color: rgba(255, 255, 255, 0.75)
 
+// 单行导航行：后退 | 前进 | 刷新 三个等宽图标格（颜色/悬停沿用 .ctx-item 惯例）
+.ctx-nav-row
+	display: flex
+	gap: 0.25rem
+	width: calc(100% - 0.5rem)
+	margin: 0 0.25rem
+
+.ctx-nav-cell
+	display: flex
+	align-items: center
+	justify-content: center
+	flex: 1
+	padding: 0.375rem 0
+	border-radius: 0.375rem
+	font-size: 0.875rem
+	line-height: 1.25rem
+	color: rgba(0, 0, 0, 0.75)
+	cursor: pointer
+	background: transparent
+
+	&:hover
+		background: var(--btn-regular-bg-hover)
+
+	.ctx-icon
+		width: 1.125rem
+		height: 1.125rem
+
+:global(.dark) .ctx-nav-cell
+	color: rgba(255, 255, 255, 0.75)
+
 // 分隔线：变量色随主题切换
 .ctx-divider
 	height: 1px
 	margin: 0.25rem 0.5rem
 	background: var(--line-divider)
 
-// 音量二级子菜单：绝对定位、默认隐藏、hover 展开
+// 二级子菜单：绝对定位、默认隐藏、hover 或点击父项展开
 .ctx-has-submenu
 	position: relative
-	cursor: default
+	cursor: pointer
 
 	.ctx-submenu
 		display: none
@@ -678,8 +967,15 @@ const toastCopiedText = i18n(I18nKey.copied);
 		background: var(--card-bg)
 		border: 1px solid var(--line-divider)
 		box-shadow: var(--shadow-button)
+		// 较矮视口兜底：限制最大高度并提供内部滚动
+		max-height: calc(100vh - 3rem)
+		overflow-y: auto
 
 	&:hover .ctx-submenu
+		display: block
+
+	// 点击父项固定展开（移出悬停后保持），再次点击收起
+	&.ctx-submenu-open .ctx-submenu
 		display: block
 
 .ctx-subitem

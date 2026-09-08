@@ -1,0 +1,184 @@
+---
+import { siteConfig, welcomeToastConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+
+const enabled =
+	welcomeToastConfig.enable && welcomeToastConfig.tencentMapKey.trim() !== "";
+
+const subtitle =
+	welcomeToastConfig.subtitle.trim() !== ""
+		? welcomeToastConfig.subtitle
+		: i18n(I18nKey.welcomeToastSubtitle).replace("{site}", siteConfig.title);
+
+const cooldownMs = welcomeToastConfig.cooldownMinutes * 60 * 1000;
+const loadingText = i18n(I18nKey.welcomeToastLoading);
+const greetingTemplate = i18n(I18nKey.welcomeToastGreeting);
+const greetingFallback = i18n(I18nKey.welcomeToastGreetingFallback);
+const unknownLocation = i18n(I18nKey.welcomeToastUnknownLocation);
+---
+
+{enabled && (
+	<script
+		is:inline
+		define:vars={{
+			tencentMapKey: welcomeToastConfig.tencentMapKey,
+			cooldownMs,
+			loadingText,
+			greetingTemplate,
+			greetingFallback,
+			unknownLocation,
+			subtitle,
+		}}
+	>
+		(() => {
+			const STORAGE_KEY = "welcome-toast-last-show";
+			const AUTO_CLOSE_MS = 5000;
+			const TRANSITION_MS = 500;
+			const TIMEOUT_MS = 10000;
+			let hasShown = false;
+
+			const isHomepage = () => {
+				const p = window.location.pathname;
+				return p === "/" || p === "/index.html";
+			};
+
+			const canShow = () => {
+				if (hasShown) return false;
+				if (!isHomepage()) return false;
+				const last = Number(window.localStorage.getItem(STORAGE_KEY) || "0");
+				return Number.isFinite(last) && Date.now() - last >= cooldownMs;
+			};
+
+			const jsonp = () =>
+				new Promise((resolve, reject) => {
+					const callbackName =
+						"welcomeToastJsonp_" +
+						Date.now() +
+						"_" +
+						Math.random().toString(36).slice(2);
+					const script = document.createElement("script");
+					const cleanup = () => {
+						delete window[callbackName];
+						script.remove();
+					};
+					const timer = window.setTimeout(() => {
+						cleanup();
+						reject(new Error("WelcomeToast: request timeout"));
+					}, TIMEOUT_MS);
+					window[callbackName] = (res) => {
+						window.clearTimeout(timer);
+						cleanup();
+						resolve(res);
+					};
+					script.onerror = () => {
+						window.clearTimeout(timer);
+						cleanup();
+						reject(new Error("WelcomeToast: script error"));
+					};
+					script.src =
+						"https://apis.map.qq.com/ws/location/v1/ip?key=" +
+						encodeURIComponent(tencentMapKey) +
+						"&output=jsonp&callback=" +
+						callbackName;
+					document.head.appendChild(script);
+				});
+
+			const showToast = () => {
+				const container = document.createElement("div");
+				container.id = "welcome-toast";
+				container.className =
+        "fixed bottom-4 right-4 md:right-20 z-50 transform translate-y-full opacity-0 transition-all duration-500 ease-out";
+
+				const card = document.createElement("div");
+				card.className =
+					"bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-lg p-4 max-w-xs";
+
+				const row = document.createElement("div");
+				row.className = "flex items-start gap-3";
+
+				const emoji = document.createElement("span");
+				emoji.className = "text-2xl leading-none";
+				emoji.textContent = "🙂";
+
+				const textWrap = document.createElement("div");
+				textWrap.className = "flex-1";
+
+				const message = document.createElement("p");
+				message.id = "welcome-message";
+				message.className =
+					"text-sm font-semibold text-gray-900 dark:text-gray-100";
+				message.textContent = loadingText;
+
+				const subtitleEl = document.createElement("p");
+				subtitleEl.className =
+					"text-xs text-gray-600 dark:text-gray-400 mt-2 italic";
+				subtitleEl.textContent = subtitle;
+
+				const closeBtn = document.createElement("button");
+				closeBtn.type = "button";
+				closeBtn.setAttribute("aria-label", "关闭");
+				closeBtn.className =
+					"shrink-0 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors";
+				closeBtn.innerHTML =
+					'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+				let closed = false;
+				let autoCloseTimer = 0;
+				const close = () => {
+					if (closed) return;
+					closed = true;
+					window.clearTimeout(autoCloseTimer);
+					container.classList.remove("translate-y-0", "opacity-100");
+					container.classList.add("translate-y-full", "opacity-0");
+					window.setTimeout(() => container.remove(), TRANSITION_MS);
+				};
+				closeBtn.addEventListener("click", close);
+				autoCloseTimer = window.setTimeout(close, AUTO_CLOSE_MS);
+
+				textWrap.append(message, subtitleEl);
+				row.append(emoji, textWrap, closeBtn);
+				card.append(row);
+				container.append(card);
+				document.body.append(container);
+
+				window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
+
+				window.requestAnimationFrame(() => {
+					window.requestAnimationFrame(() => {
+						container.classList.remove("translate-y-full", "opacity-0");
+						container.classList.add("translate-y-0", "opacity-100");
+					});
+				});
+
+				jsonp()
+					.then((res) => {
+						const ad = res && res.result && res.result.ad_info;
+						if (!res || res.status !== 0 || !ad) {
+							throw new Error("WelcomeToast: invalid response");
+						}
+						const parts = [ad.nation, ad.province, ad.city, ad.district].filter(
+							(v) => typeof v === "string" && v.trim() !== "",
+						);
+						message.textContent = greetingTemplate.replace(
+							"{location}",
+							parts.join(" ") || unknownLocation,
+						);
+					})
+					.catch((err) => {
+						console.warn("[WelcomeToast]", err);
+						message.textContent = greetingFallback;
+					});
+			};
+
+			const tryShow = () => {
+				if (!canShow()) return;
+				hasShown = true;
+				showToast();
+			};
+
+			tryShow();
+			document.addEventListener("swup:contentReplaced", tryShow);
+		})();
+	</script>
+)}

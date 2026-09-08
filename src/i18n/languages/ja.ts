@@ -449,6 +449,18 @@ export const ja: Translation = {
 	[Key.siteStatsDaysAgo]: "{days} 日前",
 	[Key.siteStatsDays]: "{days} 日",
 	[Key.today]: "今日",
+	[Key.umamiStats]: "統計",
+	[Key.umamiStatsTotalPageviews]: "総閲覧数",
+	[Key.umamiStatsTotalVisits]: "訪問数",
+	[Key.umamiStatsTotalVisitors]: "訪問者数",
+	[Key.umamiStatsTodayPageviews]: "今日の閲覧数",
+	[Key.umamiStatsTodayVisits]: "今日の訪問数",
+	[Key.umamiStatsOnline]: "閲覧中",
+	[Key.welcomeToastLoading]: "読み込み中...",
+	[Key.welcomeToastGreeting]: "{location}から来た方、こんにちは！",
+	[Key.welcomeToastGreetingFallback]: "こんにちは！",
+	[Key.welcomeToastUnknownLocation]: "場所不明",
+	[Key.welcomeToastSubtitle]: "{site}へようこそ〜",
 
 	// サイト情報
 	[Key.siteInfo]: "サイト情報",
@@ -561,4 +573,5 @@ export const ja: Translation = {
 	[Key.contextMenuOpenLink]: "新しいタブで開く",
 	[Key.contextMenuOpenImage]: "画像を新しいタブで開く",
 	[Key.contextMenuCopyImage]: "画像URLをコピー",
+	[Key.contextMenuToggleFps]: "FPS 表示切替",
 };

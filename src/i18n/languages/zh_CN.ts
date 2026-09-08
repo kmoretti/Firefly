@@ -442,6 +442,18 @@ export const zh_CN: Translation = {
 	[Key.siteStatsDaysAgo]: "{days} 天前",
 	[Key.siteStatsDays]: "{days} 天",
 	[Key.today]: "今天",
+	[Key.umamiStats]: "统计",
+	[Key.umamiStatsTotalPageviews]: "总浏览量",
+	[Key.umamiStatsTotalVisits]: "访问数",
+	[Key.umamiStatsTotalVisitors]: "游客数",
+	[Key.umamiStatsTodayPageviews]: "今日浏览",
+	[Key.umamiStatsTodayVisits]: "今日访问",
+	[Key.umamiStatsOnline]: "正在浏览",
+	[Key.welcomeToastLoading]: "正在加载...",
+	[Key.welcomeToastGreeting]: "你好，来自{location}的朋友",
+	[Key.welcomeToastGreetingFallback]: "你好呀！",
+	[Key.welcomeToastUnknownLocation]: "未知位置",
+	[Key.welcomeToastSubtitle]: "欢迎来到 {site}~",
 
 	// 站点信息
 	[Key.siteInfo]: "站点信息",
@@ -552,4 +564,5 @@ export const zh_CN: Translation = {
 	[Key.contextMenuOpenLink]: "新窗口打开",
 	[Key.contextMenuOpenImage]: "新窗口打开图片",
 	[Key.contextMenuCopyImage]: "复制图片地址",
+	[Key.contextMenuToggleFps]: "FPS 显隐",
 };

@@ -7,11 +7,13 @@ import CodeGroupManager from "@components/features/CodeGroupManager.astro";
 import ContextMenu from "@components/features/ContextMenu.astro";
 import FancyboxManager from "@components/features/FancyboxManager.astro";
 import FontSetup from "@components/features/FontSetup.astro";
+import FpsMonitor from "@components/features/FpsMonitor.astro";
 import GithubCardManager from "@components/features/GithubCardManager.astro";
 import MusicManager from "@components/features/MusicManager.astro";
 import MusicPlayerView from "@components/features/MusicPlayerView.astro";
 import SakuraEffect from "@components/features/SakuraEffect.astro";
 import WavesEffect from "@components/features/WavesEffect.astro";
+import WelcomeToast from "@components/features/WelcomeToast.astro";
 import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
 
 import {
@@ -162,6 +164,57 @@ const ogImageAlt = propsOgImageAlt ?? pageTitle;
     <style is:inline>
 			@layer properties, theme, base, components, utilities;
 		</style>
+    {import.meta.env.DEV && (
+      <script is:inline>
+        // 仅开发环境注入：清理遗留的 Service Worker 与缓存。
+        // pnpm preview 与 pnpm dev 同用 4321 端口，preview 注册的 SWPP SW 会永久缓存旧构建页面，
+        // 导致之后 dev 的新代码到不了浏览器（dev 下 /sw.js 404，旧 SW 的更新检查永不成功）。
+        // 本脚本在 dev 页面加载时注销全部 SW 并清空 Cache Storage；若本次加载正被 SW 控制，
+        // 清理后自动刷新一次（sessionStorage 守卫防循环）。构建产物不含此脚本，线上 SWPP 不受影响。
+        (function () {
+          if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return;
+          if (!("serviceWorker" in navigator)) return;
+          var GUARD = "firefly-sw-dev-cleanup";
+          var start = function () {
+            var isDevPage = false;
+            var scripts = document.querySelectorAll("script[src]");
+            for (var i = 0; i < scripts.length; i++) {
+              var src = scripts[i].getAttribute("src") || "";
+              if (src.indexOf("/@vite/") !== -1 || src.indexOf("/@fs/") !== -1 || src.indexOf("/src/") !== -1) {
+                isDevPage = true;
+                break;
+              }
+            }
+            if (!isDevPage) return;
+            var controlled = Boolean(navigator.serviceWorker.controller);
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              if (!controlled && regs.length === 0) return;
+              try {
+                if (sessionStorage.getItem(GUARD) === "1") return;
+                if (controlled) sessionStorage.setItem(GUARD, "1");
+              } catch (e) {}
+              var done = Promise.all(regs.map(function (r) { return r.unregister(); }));
+              if (window.caches && caches.keys) {
+                done = done.then(function () {
+                  return caches.keys().then(function (keys) {
+                    return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                  });
+                });
+              }
+              done.then(function () {
+                if (controlled) location.reload();
+                console.info("[firefly] dev 环境已清理遗留 Service Worker 与缓存");
+              });
+            });
+          };
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", start);
+          } else {
+            start();
+          }
+        })();
+      </script>
+    )}
     {analyticsConfig?.googleAnalyticsId && (
             <GoogleAnalytics analyticsId={analyticsConfig.googleAnalyticsId} />
     )}
@@ -544,6 +597,9 @@ const ogImageAlt = propsOgImageAlt ?? pageTitle;
     <MusicManager />
     <!-- 自定义右键菜单（配置见 src/config/contextMenuConfig.ts） -->
     <ContextMenu />
+    <WelcomeToast />
+    <!-- FPS 帧率监视器（配置见 src/config/fpsConfig.ts） -->
+    <FpsMonitor />
     <slot />
 
     <!-- 播放器视图脚本：必须在 <slot /> 之后（解析到它时所有 widget 的 DOM 要已存在），

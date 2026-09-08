@@ -1,0 +1,184 @@
+---
+import { fpsConfig } from "@/config";
+
+// FPS 帧率监视器：固定定位在页面角落实时显示帧率
+// 显隐由右键菜单（window.toggleFpsMonitor）切换并持久化到 localStorage
+// enable=false 时组件与脚本一起零输出
+---
+
+{
+	fpsConfig.enable && (
+		<Fragment>
+			<div
+				id="fps-monitor"
+				class="fps-monitor"
+				style={`right: ${fpsConfig.position.right}; bottom: ${fpsConfig.position.bottom}; z-index: ${fpsConfig.zIndex};`}
+			>
+				<span class="fps-value" id="fps-value">--</span><span class="fps-unit">FPS</span>
+			</div>
+			{/* 内联脚本必须紧跟元素：define:vars 使其同步执行，可在首帧绘制前完成初始隐藏，避免 FOUC */}
+			<script
+				is:inline
+				define:vars={{
+					storageKey: fpsConfig.storageKey,
+					defaultVisible: fpsConfig.defaultVisible,
+					thresholds: fpsConfig.thresholds,
+				}}
+			>
+				(function () {
+					// 防重复初始化守卫：FpsMonitorManager 已存在说明脚本执行过，直接退出
+					if (window.FpsMonitorManager !== undefined) return;
+
+					var monitor = document.getElementById("fps-monitor");
+					var value = document.getElementById("fps-value");
+					if (!monitor || !value) return;
+
+					// 显隐状态：localStorage 有记录用记录，否则用配置默认值
+					var visible = defaultVisible;
+					try {
+						var stored = localStorage.getItem(storageKey);
+						if (stored !== null) visible = stored === "true";
+					} catch (e) {}
+
+					var frames = 0;
+					var last = performance.now();
+					var rafId = 0;
+
+					function applyVisibility() {
+						monitor.classList.toggle("hide", !visible);
+					}
+
+					// 重置时间戳与帧数后重启 rAF，保证切换可见后的首秒读数准确
+					function resetAndStart() {
+						frames = 0;
+						last = performance.now();
+						if (rafId) cancelAnimationFrame(rafId);
+						rafId = requestAnimationFrame(tick);
+					}
+
+					function tick(now) {
+						frames++;
+						if (now - last >= 1000) {
+							setValue(Math.round((frames * 1000) / (now - last)));
+							frames = 0;
+							last = now;
+						}
+						rafId = requestAnimationFrame(tick);
+					}
+
+					// 按阈值分档着色：先移除三个档位类再加新类
+					function setValue(fps) {
+						value.textContent = String(fps);
+						monitor.classList.remove("fps-good", "fps-warn", "fps-bad");
+						if (fps >= thresholds.good) {
+							monitor.classList.add("fps-good");
+						} else if (fps >= thresholds.warn) {
+							monitor.classList.add("fps-warn");
+						} else {
+							monitor.classList.add("fps-bad");
+						}
+					}
+
+					// 全局切换入口（供右键菜单 toggle-fps 调用）
+					window.toggleFpsMonitor = function () {
+						visible = !visible;
+						try {
+							localStorage.setItem(storageKey, String(visible));
+						} catch (e) {}
+						applyVisibility();
+						if (visible) resetAndStart();
+					};
+
+					// 页面进入后台暂停计帧，恢复可见时重置时间戳，避免脏数据
+					document.addEventListener("visibilitychange", function () {
+						if (document.hidden) {
+							if (rafId) cancelAnimationFrame(rafId);
+							rafId = 0;
+						} else if (visible) {
+							resetAndStart();
+						}
+					});
+
+					applyVisibility();
+					if (visible) resetAndStart();
+
+					// 防重复初始化标记
+					window.FpsMonitorManager = { toggle: window.toggleFpsMonitor };
+				})();
+			</script>
+		</Fragment>
+	)
+}
+
+<style>
+	.fps-monitor {
+		/* 档位着色变量：明暗两套，仿 admonitions 变量的明暗覆盖模式 */
+		--fps-color-good: oklch(0.7 0.14 145);
+		--fps-color-warn: oklch(0.7 0.14 60);
+		--fps-color-bad: oklch(0.6 0.2 25);
+
+		position: fixed;
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		padding: 4px 10px;
+		border-radius: 999px;
+		font-size: 12px;
+		line-height: 1;
+		pointer-events: none;
+		user-select: none;
+		white-space: nowrap;
+		background-color: var(--card-bg);
+		border: 1px solid var(--line-color);
+		color: var(--btn-content);
+		transition:
+			opacity 0.25s,
+			transform 0.25s,
+			visibility 0.25s;
+	}
+
+	/* 暗色主题：档位色提亮一档 */
+	:global(.dark) .fps-monitor {
+		--fps-color-good: oklch(0.75 0.14 145);
+		--fps-color-warn: oklch(0.75 0.14 60);
+		--fps-color-bad: oklch(0.65 0.2 25);
+	}
+
+	.fps-monitor .fps-value {
+		font-variant-numeric: tabular-nums;
+		min-width: 2ch;
+		text-align: right;
+		transition: color 0.3s;
+	}
+
+	/* FPS 单位用弱化文字色，不随档位变色 */
+	.fps-monitor .fps-unit {
+		color: var(--content-meta);
+	}
+
+	.fps-monitor.fps-good .fps-value {
+		color: var(--fps-color-good);
+	}
+
+	.fps-monitor.fps-warn .fps-value {
+		color: var(--fps-color-warn);
+	}
+
+	.fps-monitor.fps-bad .fps-value {
+		color: var(--fps-color-bad);
+	}
+
+	/* 隐藏态：淡出并轻微下移缩小（pointer-events 本就为 none） */
+	.fps-monitor.hide {
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(6px) scale(0.95);
+	}
+
+	@media (max-width: 768px) {
+		.fps-monitor {
+			font-size: 11px;
+			padding: 3px 8px;
+		}
+	}
+</style>

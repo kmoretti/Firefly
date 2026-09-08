@@ -1,0 +1,264 @@
+---
+import { Icon } from "astro-icon/components";
+import WidgetLayout from "@/components/common/WidgetLayout.astro";
+import { analyticsConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import type { WidgetComponentConfig } from "@/types/config";
+
+interface Props {
+	class?: string;
+	style?: string;
+	widgetConfig?: WidgetComponentConfig;
+}
+
+const { class: className, style, widgetConfig } = Astro.props;
+
+const showTitle = widgetConfig?.showTitle !== false;
+
+const umamiConfig = analyticsConfig.umamiAnalytics;
+
+const shareId = umamiConfig?.shareId;
+
+const apiHost = umamiConfig?.scriptUrl
+	? new URL(umamiConfig.scriptUrl).origin
+	: "";
+
+const enabled = Boolean(shareId && apiHost);
+---
+
+{enabled && (
+  <WidgetLayout name={i18n(I18nKey.umamiStats)} showTitle={showTitle} id="umami-stats" class={className} style={style}>
+    <div data-umami-stats-root class="flex flex-col">
+      <div class="flex items-center justify-between px-3 py-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="text-(--primary) text-xl">
+            <Icon name="material-symbols:visibility-outline" />
+          </div>
+          <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">
+            {i18n(I18nKey.umamiStatsTotalPageviews)}
+          </span>
+        </div>
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-umami-value="totalPageviews">-</span>
+      </div>
+      <div class="flex items-center justify-between px-3 py-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="text-(--primary) text-xl">
+            <Icon name="material-symbols:directions-walk" />
+          </div>
+          <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">
+            {i18n(I18nKey.umamiStatsTotalVisits)}
+          </span>
+        </div>
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-umami-value="totalVisits">-</span>
+      </div>
+      <div class="flex items-center justify-between px-3 py-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="text-(--primary) text-xl">
+            <Icon name="material-symbols:person-outline" />
+          </div>
+          <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">
+            {i18n(I18nKey.umamiStatsTotalVisitors)}
+          </span>
+        </div>
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-umami-value="totalVisitors">-</span>
+      </div>
+      <div class="border-t border-dashed border-neutral-300/60 dark:border-neutral-700/60 my-2 mx-3"></div>
+      <div class="flex items-center justify-between px-3 py-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="text-(--primary) text-xl">
+            <Icon name="material-symbols:today-outline" />
+          </div>
+          <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">
+            {i18n(I18nKey.umamiStatsTodayPageviews)}
+          </span>
+        </div>
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-umami-value="todayPageviews">-</span>
+      </div>
+      <div class="flex items-center justify-between px-3 py-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="text-(--primary) text-xl">
+            <Icon name="material-symbols:schedule" />
+          </div>
+          <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">
+            {i18n(I18nKey.umamiStatsTodayVisits)}
+          </span>
+        </div>
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-umami-value="todayVisits">-</span>
+      </div>
+      <div class="flex items-center justify-between px-3 py-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="text-(--primary) text-xl">
+            <Icon name="material-symbols:wifi-tethering" />
+          </div>
+          <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">
+            {i18n(I18nKey.umamiStatsOnline)}
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400"></span>
+          <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-umami-value="online">-</span>
+        </div>
+      </div>
+      <div class="px-3 mt-2">
+        <div data-umami-chart class="flex items-end justify-between gap-0.5 h-12"></div>
+        <div class="flex justify-between text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+          <span data-umami-chart-start></span>
+        </div>
+      </div>
+    </div>
+  </WidgetLayout>
+)}
+
+<script is:inline define:vars={{ shareId, apiHost }}>
+  const TOKEN_KEY = "umami-share-token";
+  const TOKEN_TTL = 10 * 60 * 1000;
+
+  async function fetchShareToken() {
+    try {
+      const cached = sessionStorage.getItem(TOKEN_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.token && parsed.websiteId && parsed.exp > Date.now()) {
+          return parsed;
+        }
+      }
+    } catch (err) {}
+    const res = await fetch(`${apiHost}/api/share/${shareId}`);
+    if (!res.ok) throw new Error(`Umami share API responded ${res.status}`);
+    const data = await res.json();
+    const info = {
+      token: data.token,
+      websiteId: data.websiteId,
+      exp: Date.now() + TOKEN_TTL,
+    };
+    try {
+      sessionStorage.setItem(TOKEN_KEY, JSON.stringify(info));
+    } catch (err) {}
+    return info;
+  }
+
+  function loadData() {
+    if (window.__umamiStatsData) {
+      return Promise.resolve(window.__umamiStatsData).catch((err) => {
+        console.warn("[UmamiStats] load failed:", err);
+        return null;
+      });
+    }
+    const promise = (async () => {
+      const tokenInfo = await fetchShareToken();
+      const headers = {
+        "x-umami-share-token": tokenInfo.token,
+        "x-umami-share-context": "1",
+      };
+      const base = `${apiHost}/api/websites/${tokenInfo.websiteId}`;
+      const now = Date.now();
+      const todayStart = new Date().setHours(0, 0, 0, 0);
+      const timezone = encodeURIComponent(
+        Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      );
+      const request = (url) =>
+        fetch(url, { headers }).then((res) => {
+          if (!res.ok) throw new Error(`Umami API ${res.status}: ${url}`);
+          return res.json();
+        });
+      const [totalStats, todayStats, active, pageviews] = await Promise.all([
+        request(`${base}/stats?startAt=0&endAt=${now}`),
+        request(`${base}/stats?startAt=${todayStart}&endAt=${now}`),
+        request(`${base}/active`),
+        request(
+          `${base}/pageviews?startAt=${now - 7 * 86400000}&endAt=${now}&unit=day&timezone=${timezone}`,
+        ),
+      ]);
+      return { totalStats, todayStats, active, pageviews };
+    })();
+    window.__umamiStatsData = promise;
+    return promise.then(
+      (data) => {
+        window.__umamiStatsData = data;
+        return data;
+      },
+      (err) => {
+        window.__umamiStatsData = null;
+        console.warn("[UmamiStats] load failed:", err);
+        return null;
+      },
+    );
+  }
+
+  function renderChart(root, items) {
+    const chart = root.querySelector("[data-umami-chart]");
+    if (!chart) return;
+    const last7 = (items || []).slice(-7);
+    if (!last7.length) return;
+    const max = Math.max(...last7.map((p) => p.y || 0)) || 1;
+    chart.innerHTML = "";
+    last7.forEach((p) => {
+      const bar = document.createElement("div");
+      bar.style.flex = "1";
+      bar.style.height = `${Math.max(4, ((p.y || 0) / max) * 100)}%`;
+      bar.style.background = "var(--primary)";
+      bar.style.borderRadius = "2px 2px 0 0";
+      bar.title = `${String(p.x || "").slice(5, 10)}: ${p.y}`;
+      chart.appendChild(bar);
+    });
+    const startEl = root.querySelector("[data-umami-chart-start]");
+    if (startEl) startEl.textContent = String(last7[0].x || "").slice(5, 10);
+  }
+
+  function fillAll(data) {
+    if (!data) return;
+    document.querySelectorAll("[data-umami-stats-root]").forEach((root) => {
+      const setValue = (key, value) => {
+        const el = root.querySelector(`[data-umami-value="${key}"]`);
+        if (el) el.textContent = value;
+      };
+      setValue("totalPageviews", Number(data.totalStats.pageviews || 0).toLocaleString());
+      setValue("totalVisits", Number(data.totalStats.visits || 0).toLocaleString());
+      setValue("totalVisitors", Number(data.totalStats.visitors || 0).toLocaleString());
+      setValue("todayPageviews", Number(data.todayStats.pageviews || 0).toLocaleString());
+      setValue("todayVisits", Number(data.todayStats.visits || 0).toLocaleString());
+      setValue("online", String(data.active.visitors ?? 0));
+      renderChart(root, data.pageviews.pageviews);
+    });
+  }
+
+  async function refreshActive() {
+    if (document.hidden) return;
+    const data = window.__umamiStatsData;
+    if (!data || typeof data.then === "function") return;
+    try {
+      const tokenInfo = await fetchShareToken();
+      const res = await fetch(`${apiHost}/api/websites/${tokenInfo.websiteId}/active`, {
+        headers: {
+          "x-umami-share-token": tokenInfo.token,
+          "x-umami-share-context": "1",
+        },
+      });
+      if (!res.ok) return;
+      const active = await res.json();
+      if (typeof active.visitors !== "number") return;
+      document.querySelectorAll("[data-umami-stats-root]").forEach((root) => {
+        const el = root.querySelector('[data-umami-value="online"]');
+        if (el) el.textContent = String(active.visitors);
+      });
+    } catch (err) {}
+  }
+
+  loadData().then(fillAll);
+
+  if (!window.__umamiStatsInit) {
+    window.__umamiStatsInit = true;
+    document.addEventListener("swup:contentReplaced", () => {
+      setTimeout(() => {
+        const data = window.__umamiStatsData;
+        if (data && typeof data.then !== "function") {
+          fillAll(data);
+        } else {
+          loadData().then(fillAll);
+        }
+      }, 100);
+    });
+    window.__umamiStatsInterval = setInterval(refreshActive, 60 * 1000);
+  }
+</script>

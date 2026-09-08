@@ -1,0 +1,8 @@
+/sw.js
+  Cache-Control: no-cache, must-revalidate
+
+/swpp/*
+  Cache-Control: no-cache, must-revalidate
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
