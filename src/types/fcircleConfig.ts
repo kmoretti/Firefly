@@ -4,5 +4,7 @@ export type FcircleConfig = {
 	linkApiUrl: string;
 	itemsPerPage: number;
 	showStatus: boolean;
+	showStats: boolean;
+	showRandom: boolean;
 	timeoutMs: number;
 };

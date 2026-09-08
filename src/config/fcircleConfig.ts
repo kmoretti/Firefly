@@ -6,5 +6,7 @@ export const fcircleConfig: FcircleConfig = {
 	linkApiUrl: "https://fc.081531.xyz/link.json",
 	itemsPerPage: 10,
 	showStatus: true,
+	showStats: true,
+	showRandom: true,
 	timeoutMs: 8000,
 };
