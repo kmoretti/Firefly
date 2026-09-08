@@ -47,6 +47,9 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 
 			LinkPresets.Fcircle,
 
+			// 更新日志
+			LinkPresets.Changelog,
+
 			// 留言
 			LinkPresets.Guestbook,
 		],
@@ -189,6 +192,12 @@ export const LinkPresets: Record<string, NavBarLink> = {
 		url: "/fcircle/",
 		icon: "material-symbols:public-rounded",
 		pageKey: "fcircle",
+	},
+	Changelog: {
+		name: "更新日志",
+		url: "/changelog/",
+		icon: "material-symbols:history",
+		pageKey: "changelog",
 	},
 	Guestbook: {
 		name: "留言",
