@@ -36,17 +36,23 @@ const itemsPerPage = Math.max(1, fcircleConfig.itemsPerPage);
 			{externalUrl}
 			{itemsPerPage}
 			showStatus={fcircleConfig.showStatus}
+			showStats={fcircleConfig.showStats}
+			showRandom={fcircleConfig.showRandom}
 			loadingText={i18n(I18nKey.fcircleLoading)}
 			emptyText={i18n(I18nKey.fcircleEmpty)}
 			errorText={i18n(I18nKey.fcircleError)}
 			errorDesc={i18n(I18nKey.fcircleErrorDesc)}
 			openExternalText={i18n(I18nKey.fcircleOpenExternal)}
 			retryText={i18n(I18nKey.fcircleRetry)}
-			reachableText={i18n(I18nKey.fcircleReachable)}
 			unreachableText={i18n(I18nKey.fcircleUnreachable)}
-			latencyText={i18n(I18nKey.fcircleLatency)}
-			crawlableText={i18n(I18nKey.fcircleCrawlable)}
-			noCrawlText={i18n(I18nKey.fcircleNoCrawl)}
+			statsSubscribedText={i18n(I18nKey.fcircleStatsSubscribed)}
+			statsActiveText={i18n(I18nKey.fcircleStatsActive)}
+			statsArticlesText={i18n(I18nKey.fcircleStatsArticles)}
+			statsFailedText={i18n(I18nKey.fcircleStatsFailed)}
+			lastUpdatedText={i18n(I18nKey.fcircleLastUpdated)}
+			randomTitle={i18n(I18nKey.fcircleRandomTitle)}
+			randomNext={i18n(I18nKey.fcircleRandomNext)}
+			randomRead={i18n(I18nKey.fcircleRandomRead)}
 		/>
 	</section>
 </MainGridLayout>
