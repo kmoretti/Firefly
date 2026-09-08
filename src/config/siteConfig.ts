@@ -20,6 +20,8 @@ const pages = resolvePageToggles({
 
 	// 动态页面开关
 	dynamic: true,
+	// 项目展示页开关
+	projects: true,
 	// 相册页面开关
 	gallery: true,
 	// 书签导航页面开关
@@ -390,6 +392,14 @@ export const siteConfig: SiteConfig = {
 			"*.vndb.org",
 			"*.081531.xyz",
 		],
+	},
+
+	// ── 订阅 (RSS / Atom) 配置 ──────────────────────────────────
+	feed: {
+		// 订阅条目内容模式：
+		// - "full": 包含文章正文全文（默认）
+		// - "summary": 仅包含文章摘要/描述，不含正文，体积更小
+		contentMode: "full",
 	},
 
 	// 站点语言，在本配置文件顶部SITE_LANG定义
