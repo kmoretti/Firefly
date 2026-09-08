@@ -50,6 +50,9 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 			// 更新日志
 			LinkPresets.Changelog,
 
+			// 十年之约
+			LinkPresets.Decennial,
+
 			// 留言
 			LinkPresets.Guestbook,
 		],
@@ -128,7 +131,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 			},
 			{
 				name: "Firefly文档",
-				url: "https://docs-firefly.cuteleaf.cn",
+				url: "https://docs-b.kemeow.top",
 				external: true,
 				icon: "material-symbols:docs",
 			},
@@ -138,7 +141,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 	// 文档链接
 	// links.push({
 	// 	name: "文档",
-	// 	url: "https://docs-firefly.cuteleaf.cn",
+	// 	url: "https://docs-b.kemeow.top",
 	// 	external: true,
 	// 	icon: "material-symbols:docs",
 	// });
@@ -198,6 +201,12 @@ export const LinkPresets: Record<string, NavBarLink> = {
 		url: "/changelog/",
 		icon: "material-symbols:history",
 		pageKey: "changelog",
+	},
+	Decennial: {
+		name: "十年之约",
+		url: "/decennial/",
+		icon: "material-symbols:event-availability",
+		pageKey: "decennial",
 	},
 	Guestbook: {
 		name: "留言",

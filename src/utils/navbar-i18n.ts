@@ -24,6 +24,7 @@ const NAVBAR_DEFAULT_NAMES: Record<string, I18nKey> = {
 	友链: I18nKey.friends,
 	朋友圈: I18nKey.fcircle,
 	更新日志: I18nKey.changelog,
+	十年之约: I18nKey.decennialTitle,
 	留言: I18nKey.guestbook,
 	动态: I18nKey.dynamic,
 	项目: I18nKey.projects,

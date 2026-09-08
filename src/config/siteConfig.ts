@@ -15,6 +15,8 @@ const pages = resolvePageToggles({
 	fcircle: true,
 	// 更新日志页面开关
 	changelog: true,
+	// 十年之约页面开关
+	decennial: true,
 	// 留言板页面开关，需要配置评论系统
 	guestbook: true,
 
