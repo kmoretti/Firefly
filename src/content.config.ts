@@ -56,6 +56,14 @@ type ProjectData = {
 	lang: string;
 };
 
+type ChangelogData = {
+	version: string;
+	published: Date;
+	type: "feature" | "improvement" | "fix" | "removal";
+	title: string;
+	draft: boolean;
+};
+
 type ContentCollection<T> = CollectionConfig<
 	ZodType<T>,
 	ReturnType<typeof glob>
@@ -134,14 +142,27 @@ const projectsCollection: ContentCollection<ProjectData> = defineCollection({
 	}),
 });
 
+const changelogCollection: ContentCollection<ChangelogData> = defineCollection({
+	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/changelog" }),
+	schema: z.object({
+		version: z.string(),
+		published: z.coerce.date(),
+		type: z.enum(["feature", "improvement", "fix", "removal"]),
+		title: z.string(),
+		draft: z.boolean().optional().default(false),
+	}),
+});
+
 export const collections: {
 	dynamic: typeof dynamicCollection;
 	posts: typeof postsCollection;
 	spec: typeof specCollection;
 	projects: typeof projectsCollection;
+	changelog: typeof changelogCollection;
 } = {
 	dynamic: dynamicCollection,
 	posts: postsCollection,
 	spec: specCollection,
 	projects: projectsCollection,
+	changelog: changelogCollection,
 };
