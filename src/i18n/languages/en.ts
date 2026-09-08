@@ -106,6 +106,13 @@ export const en: Translation = {
 	[Key.fcircleRandomTitle]: "🎲 Feeling lucky",
 	[Key.fcircleRandomNext]: "🔄 Shuffle",
 	[Key.fcircleRandomRead]: "Read article",
+	[Key.changelog]: "Changelog",
+	[Key.changelogDescription]: "Track feature releases, fixes and important changes of this blog",
+	[Key.changelogTypeFeature]: "New features",
+	[Key.changelogTypeImprovement]: "Improvements",
+	[Key.changelogTypeFix]: "Bug fixes",
+	[Key.changelogTypeRemoval]: "Removals",
+	[Key.changelogDetailHint]: "Click to view details",
 	[Key.booknav]: "Bookmark Nav",
 	[Key.booknavDescription]:
 		"A curated collection of useful sites, organized by category.",

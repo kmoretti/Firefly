@@ -106,6 +106,13 @@ export const ru: Translation = {
 	[Key.fcircleRandomTitle]: "🎲 Случайная статья",
 	[Key.fcircleRandomNext]: "🔄 Ещё раз",
 	[Key.fcircleRandomRead]: "Читать статью",
+	[Key.changelog]: "Журнал изменений",
+	[Key.changelogDescription]: "Новые функции, исправления и важные изменения блога",
+	[Key.changelogTypeFeature]: "Новые функции",
+	[Key.changelogTypeImprovement]: "Улучшения",
+	[Key.changelogTypeFix]: "Исправления",
+	[Key.changelogTypeRemoval]: "Удаления",
+	[Key.changelogDetailHint]: "Нажмите для подробностей",
 	[Key.booknav]: "Каталог закладок",
 	[Key.booknavDescription]:
 		"Подборка полезных сайтов, сгруппированных по категориям.",
