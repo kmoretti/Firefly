@@ -153,6 +153,7 @@ export default defineConfig({
 			iconDir: "src/assets",
 			include: {
 				"material-symbols": ["*"],
+				"meteor-icons": ["*"],
 				"fa7-brands": ["*"],
 				"fa7-regular": ["*"],
 				"fa7-solid": ["*"],

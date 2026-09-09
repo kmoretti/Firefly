@@ -222,6 +222,9 @@ importers:
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
+      '@iconify-json/meteor-icons':
+        specifier: ^1.2.6
+        version: 1.2.6
       '@iconify-json/svg-spinners':
         specifier: ^1.2.4
         version: 1.2.4
@@ -1643,6 +1646,9 @@ packages:
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
+
+  '@iconify-json/meteor-icons@1.2.6':
+    resolution: {integrity: sha512-A6solT08QkfMclp5LEBFP8a2guoV13yJOELNtqWHSYN/4x8RxHqR6wbkNzefHq7BKD6osszoMDTrYfRXHvancA==}
 
   '@iconify-json/mingcute@1.2.8':
     resolution: {integrity: sha512-J8VXpRwTpx5yzOzyhx3T4IXnfXIKTWFl3rZ9okcW4c+NMMuwkLvdmM4rkjB83tnYIhg5+kkeMpmw8tvSnxd4rQ==}
@@ -7886,6 +7892,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/mdi@1.2.3':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/meteor-icons@1.2.6':
     dependencies:
       '@iconify/types': 2.0.0
 
