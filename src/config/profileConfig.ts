@@ -28,6 +28,12 @@ export const profileConfig: ProfileConfig = {
 			showName: false,
 		},
 		{
+			name: "telegram",
+			icon: "meteor-icons:telegram",
+			url: "https://s.081531.xyz/qq",
+			showName: false,
+		},
+		{
 			name: "GitHub",
 			icon: "fa7-brands:github",
 			url: "https://github.081531.xyz",

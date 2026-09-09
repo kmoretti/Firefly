@@ -47,12 +47,6 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 
 			LinkPresets.Fcircle,
 
-			// 更新日志
-			LinkPresets.Changelog,
-
-			// 十年之约
-			LinkPresets.Decennial,
-
 			// 留言
 			LinkPresets.Guestbook,
 		],
@@ -99,6 +93,12 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 			// 打赏
 			LinkPresets.Sponsor,
 
+			// 更新日志
+			LinkPresets.Changelog,
+
+			// 十年之约
+			LinkPresets.Decennial,
+
 			// 关于页面
 			LinkPresets.About,
 		],
@@ -106,35 +106,35 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 
 	// 自定义导航栏链接
 	links.push({
-		name: "链接",
+		name: "跳转",
 		url: "#",
 		icon: "material-symbols:link",
 		// 子菜单
 		children: [
 			{
-				name: "GitHub",
-				url: "https://github.com/CuteLeaf/Firefly",
+				name: "开往",
+				url: "https://www.travellings.cn/go.html ",
 				external: true,
-				icon: "fa7-brands:github",
+				icon: "material-symbols:train",
 			},
-			{
-				name: "Gitee",
-				url: "https://gitee.com/CuteLeaf/Firefly",
-				external: true,
-				icon: "fa7-brands:gitee",
-			},
-			{
-				name: "QQ交流群",
-				url: "https://qm.qq.com/q/ZGsFa8qX2G",
-				external: true,
-				icon: "fa7-brands:qq",
-			},
-			{
-				name: "Firefly文档",
-				url: "https://docs-b.kemeow.top",
-				external: true,
-				icon: "material-symbols:docs",
-			},
+			// {
+			// 	name: "Gitee",
+			// 	url: "https://gitee.com/CuteLeaf/Firefly",
+			// 	external: true,
+			// 	icon: "fa7-brands:gitee",
+			// },
+			// {
+			// 	name: "QQ交流群",
+			// 	url: "https://qm.qq.com/q/ZGsFa8qX2G",
+			// 	external: true,
+			// 	icon: "fa7-brands:qq",
+			// },
+			// {
+			// 	name: "Firefly文档",
+			// 	url: "https://docs-b.kemeow.top",
+			// 	external: true,
+			// 	icon: "material-symbols:docs",
+			// },
 		],
 	});
 
