@@ -17,7 +17,7 @@ link:
     value: "https://github.com/CuteLeaf/Firefly"
   - label: "文档"
     icon: "material-symbols:menu-book"
-    value: "https://docs-firefly.cuteleaf.cn"
+    value: "https://docs-b.kemeow.top"
 ---
 
 ## 功能特性
@@ -39,6 +39,7 @@ link:
 - [x] **全文搜索** - 基于 Pagefind 的客户端搜索，支持文章内容索引
 
 ### 个性化
+
 - [x] **动态侧边栏** - 支持配置单侧边栏、双侧边栏
 - [x] **文章布局** - 支持配置(单列)列表、网格(多列/瀑布流)布局
 - [x] **字体管理** - 支持自定义字体，丰富的字体选择器
@@ -60,45 +61,49 @@ link:
 ### 本地开发部署
 
 1. **克隆仓库：**
+
    ```bash
    git clone https://github.com/Cuteleaf/Firefly.git
    cd Firefly
    ```
-   
+
    **先 [Fork](https://github.com/CuteLeaf/Firefly/fork) 到自己仓库再克隆（推荐），记得先点 Star 再 Fork 哦！**
 
    ```bash
    git clone https://github.com/you-github-name/Firefly.git
    cd Firefly
    ```
-3. **安装依赖：**
+
+2. **安装依赖：**
+
    ```bash
    # 如果没有安装 pnpm，先安装
    npm install -g pnpm
-   
+
    # 安装项目依赖
    pnpm install
    ```
 
-4. **配置博客：**
+3. **配置博客：**
    - 编辑 `src/config/` 目录下的配置文件自定义博客设置
 
-5. **启动开发服务器：**
+4. **启动开发服务器：**
    ```bash
    pnpm dev
    ```
    博客将在 `http://localhost:4321` 可用
 
 ### 平台托管部署
+
 - **参考[官方指南](https://docs.astro.build/zh-cn/guides/deploy/)将博客部署至 Vercel, Netlify, Cloudflare Pages, EdgeOne Pages 等。**
 - **Vercel**、**Netlify** 等主流平台自动部署，会根据环境自动选择适配器。
 
-   框架预设： `Astro`
+  框架预设： `Astro`
 
-   根目录： `./`
+  根目录： `./`
 
-   输出目录： `dist`
+  输出目录： `dist`
 
-   构建命令： `pnpm run build`
+  构建命令： `pnpm run build`
 
-   安装命令： `pnpm install`
+  安装命令： `pnpm install`

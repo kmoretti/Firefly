@@ -140,9 +140,9 @@ export const booknavConfig: BooknavGroup[] = [
 		items: [
 			{
 				title: "Firefly Docs",
-				url: "https://docs-firefly.cuteleaf.cn",
+				url: "https://docs-b.kemeow.top",
 				desc: "Firefly 主题模板文档",
-				icon: "https://docs-firefly.cuteleaf.cn/logo.png",
+				icon: "https://docs-b.kemeow.top/logo.png",
 				weight: 10,
 			},
 			{

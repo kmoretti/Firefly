@@ -62,9 +62,9 @@ export const friendsConfig: FriendLink[] = [
 	},
 	{
 		title: "Firefly Docs",
-		imgurl: "https://docs-firefly.cuteleaf.cn/logo.png",
+		imgurl: "https://docs-b.kemeow.top/logo.png",
 		desc: "Firefly主题模板文档",
-		siteurl: "https://docs-firefly.cuteleaf.cn",
+		siteurl: "https://docs-b.kemeow.top",
 		tags: ["Docs"],
 		group: "文档与资源",
 		weight: 9,
