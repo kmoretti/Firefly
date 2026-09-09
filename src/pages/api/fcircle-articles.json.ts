@@ -1,8 +1,8 @@
 import { fcircleConfig } from "@/config";
 import {
+	fetchJson,
 	normalizeArticles,
 	normalizeStats,
-	fetchJson,
 } from "@/utils/fcircle-adapter";
 
 export async function GET(): Promise<Response> {

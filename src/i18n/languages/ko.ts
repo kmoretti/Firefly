@@ -121,7 +121,8 @@ export const ko: Translation = {
 	[Key.decennialPromiseTitle]: "📄 이행 항목：",
 	[Key.decennialAchievementTitle]: "🎉 이행 성취：",
 	[Key.decennialProgressTitle]: "이행 진행률：",
-	[Key.decennialQuote]: "10년의 약속은 신념이자 약속이자 미래를 향한 기대입니다. 비바람이 불어도 여기에서 기록하고 공유하며 성장하겠습니다.",
+	[Key.decennialQuote]:
+		"10년의 약속은 신념이자 약속이자 미래를 향한 기대입니다. 비바람이 불어도 여기에서 기록하고 공유하며 성장하겠습니다.",
 	[Key.decennialDaysAgo]: "일 전 게시",
 	[Key.decennialDaysToGo]: "일 후",
 	[Key.decennialCharacterUnit]: "자",

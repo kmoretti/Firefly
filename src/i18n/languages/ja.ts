@@ -121,7 +121,8 @@ export const ja: Translation = {
 	[Key.decennialPromiseTitle]: "📄 公約事項：",
 	[Key.decennialAchievementTitle]: "🎉 達成実績：",
 	[Key.decennialProgressTitle]: "達成進捗：",
-	[Key.decennialQuote]: "十年の契約は、信念であり、約束であり、未来への期待です。晴れも雨も、ここで記録し、共有し、成長し続けます。",
+	[Key.decennialQuote]:
+		"十年の契約は、信念であり、約束であり、未来への期待です。晴れも雨も、ここで記録し、共有し、成長し続けます。",
 	[Key.decennialDaysAgo]: "日前の投稿",
 	[Key.decennialDaysToGo]: "日後",
 	[Key.decennialCharacterUnit]: "字",

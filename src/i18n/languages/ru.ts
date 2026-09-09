@@ -107,7 +107,8 @@ export const ru: Translation = {
 	[Key.fcircleRandomNext]: "🔄 Ещё раз",
 	[Key.fcircleRandomRead]: "Читать статью",
 	[Key.changelog]: "Журнал изменений",
-	[Key.changelogDescription]: "Новые функции, исправления и важные изменения блога",
+	[Key.changelogDescription]:
+		"Новые функции, исправления и важные изменения блога",
 	[Key.changelogTypeFeature]: "Новые функции",
 	[Key.changelogTypeImprovement]: "Улучшения",
 	[Key.changelogTypeFix]: "Исправления",
@@ -121,7 +122,8 @@ export const ru: Translation = {
 	[Key.decennialPromiseTitle]: "📄 Обязательства：",
 	[Key.decennialAchievementTitle]: "🎉 Достижения：",
 	[Key.decennialProgressTitle]: "Прогресс договора：",
-	[Key.decennialQuote]: "Десятилетний договор — это верность, обещание и надежда на будущее. В любую погоду я буду здесь записывать, делиться и расти.",
+	[Key.decennialQuote]:
+		"Десятилетний договор — это верность, обещание и надежда на будущее. В любую погоду я буду здесь записывать, делиться и расти.",
 	[Key.decennialDaysAgo]: "дн. с последней публикации",
 	[Key.decennialDaysToGo]: "дн. до конца",
 	[Key.decennialCharacterUnit]: "знаков",

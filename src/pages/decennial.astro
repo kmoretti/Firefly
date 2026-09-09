@@ -1,10 +1,10 @@
 ---
 import { getCollection } from "astro:content";
 import ImageWrapper from "@components/common/ImageWrapper.astro";
-import MainGridLayout from "@/layouts/MainGridLayout.astro";
-import { siteConfig, decennialConfig, profileConfig } from "@/config";
+import { decennialConfig, profileConfig, siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
 
 if (!siteConfig.pages.decennial || !decennialConfig.enable) {
 	return Astro.redirect("/404/");

@@ -119,7 +119,8 @@ export const zh_TW: Translation = {
 	[Key.decennialPromiseTitle]: "📄 履約事項：",
 	[Key.decennialAchievementTitle]: "🎉 履約成就：",
 	[Key.decennialProgressTitle]: "履約進度：",
-	[Key.decennialQuote]: "十年之約，是堅持，是承諾，是對未來的期許。無論風雨，無論晴好，我會在這裡記錄、分享、成長。",
+	[Key.decennialQuote]:
+		"十年之約，是堅持，是承諾，是對未來的期許。無論風雨，無論晴好，我會在這裡記錄、分享、成長。",
 	[Key.decennialDaysAgo]: "天前發布",
 	[Key.decennialDaysToGo]: "天後",
 	[Key.decennialCharacterUnit]: "字",

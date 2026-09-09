@@ -90,9 +90,7 @@ const statItems = $derived(
 );
 
 function isUnreachable(article: FcircleArticle): boolean {
-	return (
-		showStatus && statusByHost.get(article.siteHost)?.reachable === false
-	);
+	return showStatus && statusByHost.get(article.siteHost)?.reachable === false;
 }
 
 function pickRandom() {
@@ -144,9 +142,7 @@ async function load() {
 		) {
 			articles = articlesResult.value.articles;
 			stats = articlesResult.value.stats;
-			randomIndex = Math.floor(
-				Math.random() * Math.max(1, articles.length),
-			);
+			randomIndex = Math.floor(Math.random() * Math.max(1, articles.length));
 		} else {
 			failed = true;
 		}

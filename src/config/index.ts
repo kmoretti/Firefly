@@ -57,8 +57,8 @@ export type {
 	ContextMenuConfig,
 	ContextMenuItemConfig,
 } from "../types/contextMenuConfig"; // 右键菜单类型定义
-export type { FcircleConfig } from "../types/fcircleConfig";
 export type { DecennialConfig } from "../types/decennialConfig";
+export type { FcircleConfig } from "../types/fcircleConfig";
 export type { FlipClockConfig } from "../types/flipClockConfig";
 export type {
 	BuiltinFontProvider,
@@ -80,13 +80,13 @@ export { booknavConfig, booknavPageConfig } from "./booknavConfig"; // 书签导
 export { commentConfig } from "./commentConfig"; // 评论系统配置
 export { contextMenuConfig } from "./contextMenuConfig"; // 右键菜单配置
 export { coverImageConfig } from "./coverImageConfig"; // 封面图配置
+export { decennialConfig } from "./decennialConfig";
 export { displaySettingsConfig } from "./displaySettingsConfig"; // 显示设置面板开关配置
 export { dynamicConfig } from "./dynamicConfig"; // 动态页面配置
 export { sakuraConfig } from "./effectsConfig"; // 动画特效配置（樱花等）
 export { expressiveCodeConfig } from "./expressiveCodeConfig"; // 代码高亮配置
 export { externalLinkConfig } from "./externalLinkConfig"; // 外链跳转中转配置
 export { fcircleConfig } from "./fcircleConfig";
-export { decennialConfig } from "./decennialConfig";
 export { flipClockConfig } from "./flipClockConfig"; // 翻页时钟组件配置
 export { fontConfig, fontsList } from "./fontConfig"; // 字体配置
 export { footerConfig } from "./footerConfig"; // 页脚配置

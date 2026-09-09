@@ -107,7 +107,8 @@ export const en: Translation = {
 	[Key.fcircleRandomNext]: "🔄 Shuffle",
 	[Key.fcircleRandomRead]: "Read article",
 	[Key.changelog]: "Changelog",
-	[Key.changelogDescription]: "Track feature releases, fixes and important changes of this blog",
+	[Key.changelogDescription]:
+		"Track feature releases, fixes and important changes of this blog",
 	[Key.changelogTypeFeature]: "New features",
 	[Key.changelogTypeImprovement]: "Improvements",
 	[Key.changelogTypeFix]: "Bug fixes",
