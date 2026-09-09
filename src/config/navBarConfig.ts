@@ -205,7 +205,7 @@ export const LinkPresets: Record<string, NavBarLink> = {
 	Decennial: {
 		name: "十年之约",
 		url: "/decennial/",
-		icon: "material-symbols:event-availability",
+		icon: "material-symbols:event-available",
 		pageKey: "decennial",
 	},
 	Guestbook: {
