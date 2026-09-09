@@ -1,0 +1,380 @@
+---
+import { getCollection } from "astro:content";
+import ImageWrapper from "@components/common/ImageWrapper.astro";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { siteConfig, decennialConfig, profileConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+
+if (!siteConfig.pages.decennial || !decennialConfig.enable) {
+	return Astro.redirect("/404/");
+}
+
+const title = i18n(I18nKey.decennialTitle);
+const subtitle = i18n(I18nKey.decennialSubtitle);
+
+const allBlogPosts = await getCollection("posts", ({ data }) => {
+	return import.meta.env.PROD ? data.draft !== true : true;
+});
+
+let words = 0;
+for (const post of allBlogPosts) {
+	if (post.body) {
+		const text = post.body
+			.replace(/```[\s\S]*?```/g, "")
+			.replace(/`[^`]*`/g, "")
+			.replace(/\s+/g, " ")
+			.trim();
+		const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || [];
+		const englishChars = text.match(/[a-zA-Z]/g) || [];
+		words += chineseChars.length + englishChars.length;
+	}
+}
+
+const originalPosts = allBlogPosts.filter((p) => !p.data.sourceLink).length;
+const sorted = [...allBlogPosts].sort((a, b) =>
+	new Date(a.data.published) > new Date(b.data.published) ? -1 : 1,
+);
+const latest = sorted[0];
+const latestTitle = latest?.data.title ?? "";
+const latestDate = latest ? new Date(latest.data.published) : new Date();
+const { thresholds } = decennialConfig;
+---
+
+<MainGridLayout title={title} description="">
+	<div class="card-base decennial-container">
+		<div class="decennial-title text-4xl font-bold text-neutral-900 dark:text-neutral-100">
+			{subtitle}
+		</div>
+
+		<div class="avatar-container">
+			<ImageWrapper
+				src={profileConfig.avatar || ""}
+				alt={profileConfig.name}
+				class="decennial-avatar"
+				loading="lazy"
+			/>
+		</div>
+
+		<div id="days-counter" class="text-7xl font-bold text-neutral-900 dark:text-neutral-100"></div>
+		<div class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+			{i18n(I18nKey.decennialDaysCounter)}
+		</div>
+
+		<div class="date-info">
+			<div class="date-box">
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialCountFrom)}
+				</div>
+				<div id="start-date" class="text-2xl font-bold text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+			<div class="date-box">
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialCountTo)}
+				</div>
+				<div id="end-date" class="text-2xl font-bold text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+		</div>
+
+		<div class="label-container">
+			<div class="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+				{i18n(I18nKey.decennialPromiseTitle)}
+			</div>
+			<div class="horizontal-items">
+				<div id="promise1-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialPromiseEntry1)}
+				</div>
+				<div id="promise1-text" class="text-base text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+			<div class="horizontal-items">
+				<div id="promise2-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialPromiseEntry2)}
+				</div>
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{originalPosts} {i18n(I18nKey.decennialPostUnit)}
+				</div>
+			</div>
+		</div>
+
+		<div class="label-container">
+			<div class="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+				{i18n(I18nKey.decennialAchievementTitle)}
+			</div>
+			<div class="horizontal-items">
+				<div id="ach1-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialAchievementEntry1)}
+				</div>
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{originalPosts} {i18n(I18nKey.decennialPostUnit)}
+				</div>
+			</div>
+			<div class="horizontal-items">
+				<div id="ach2-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialAchievementEntry2)}
+				</div>
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{words} {i18n(I18nKey.decennialCharacterUnit)}
+				</div>
+			</div>
+			<div class="horizontal-items">
+				<div id="ach3-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialAchievementEntry3)}
+				</div>
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{words} {i18n(I18nKey.decennialCharacterUnit)}
+				</div>
+			</div>
+			<div class="horizontal-items">
+				<div id="ach4-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialAchievementEntry4)}
+				</div>
+				<div id="ach4-text" class="text-base text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+			<div class="horizontal-items">
+				<div id="ach5-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialAchievementEntry5)}
+				</div>
+				<div id="ach5-text" class="text-base text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+			<div class="horizontal-items">
+				<div id="ach6-title" class="text-base font-bold text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialAchievementEntry6)}
+				</div>
+				<div id="ach6-text" class="text-base text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+		</div>
+
+		<div class="progress-container">
+			<div class="progress-label">
+				<div class="text-base text-neutral-900 dark:text-neutral-100">
+					{i18n(I18nKey.decennialProgressTitle)}
+				</div>
+				<div id="progress-percent" class="text-base font-bold text-neutral-900 dark:text-neutral-100"></div>
+			</div>
+			<div class="progress-bar">
+				<div id="progress-fill" class="progress-fill"></div>
+			</div>
+		</div>
+
+		<div class="quote text-base font-bold text-neutral-900 dark:text-neutral-100">
+			{i18n(I18nKey.decennialQuote)}
+		</div>
+	</div>
+</MainGridLayout>
+
+<style>
+	.decennial-container {
+		position: relative;
+		overflow: hidden;
+		padding: 2.5rem;
+		text-align: center;
+	}
+	.decennial-container::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 8px;
+		background: linear-gradient(
+			90deg,
+			oklch(0.7 0.15 calc(var(--hue) + 40)),
+			oklch(0.75 0.12 calc(var(--hue) + 80))
+		);
+	}
+	.avatar-container {
+		margin: 1.25rem auto 1.875rem;
+		width: 150px;
+		height: 150px;
+		border-radius: 50%;
+		overflow: hidden;
+		border: 5px solid var(--card-bg);
+		box-shadow: 0 5px 15px rgb(0 0 0 / 0.1);
+		user-select: none;
+	}
+	.decennial-avatar {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.date-info {
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		margin: 1.875rem 0;
+	}
+	.date-box {
+		flex: 1;
+		min-width: 200px;
+		margin: 0.625rem;
+		padding: 1.25rem;
+		background: var(--page-bg);
+		border-radius: 0.75rem;
+		box-shadow: 0 5px 15px rgb(0 0 0 / 0.05);
+		transition: transform 0.3s ease;
+	}
+	.date-box:hover {
+		transform: translateY(-5px);
+	}
+	.label-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.625rem;
+		text-align: left;
+		margin: 1.25rem 0;
+	}
+	.horizontal-items {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+	.progress-container {
+		margin: 2.5rem 0 1.25rem;
+		text-align: left;
+	}
+	.progress-label {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 0.625rem;
+	}
+	.progress-bar {
+		height: 20px;
+		background: var(--page-bg);
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: inset 0 2px 5px rgb(0 0 0 / 0.1);
+	}
+	.progress-fill {
+		height: 100%;
+		width: 0;
+		border-radius: 10px;
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(
+			90deg,
+			var(--primary),
+			oklch(0.7 0.14 calc(var(--hue) + 80))
+		);
+		transition: width 1.5s ease-in-out;
+	}
+	.progress-fill::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: linear-gradient(
+			-45deg,
+			rgb(255 255 255 / 0.2) 25%,
+			transparent 25%,
+			transparent 50%,
+			rgb(255 255 255 / 0.2) 50%,
+			rgb(255 255 255 / 0.2) 75%,
+			transparent 75%,
+			transparent
+		);
+		background-size: 20px 20px;
+		animation: decennial-stripes 1s linear infinite;
+	}
+	@keyframes decennial-stripes {
+		0% {
+			background-position: 0 0;
+		}
+		100% {
+			background-position: 20px 0;
+		}
+	}
+	.quote {
+		margin-top: 1.875rem;
+		font-style: italic;
+		line-height: 1.6;
+		text-align: left;
+		border-left: 4px solid var(--primary);
+		padding-left: 0.9375rem;
+		color: var(--primary);
+	}
+
+	@media (max-width: 600px) {
+		.decennial-container {
+			padding: 1.25rem;
+		}
+		.date-info {
+			flex-direction: column;
+		}
+		.date-box {
+			min-width: 100%;
+		}
+	}
+</style>
+
+<script define:vars={{
+	startDate: decennialConfig.siteStartDate,
+	latestDateISO: latestDate.toISOString(),
+	latestTitle,
+	originalPosts,
+	words,
+	dayUnit: i18n(I18nKey.decennialDayUnit),
+	dayAgoUnit: i18n(I18nKey.decennialDaysAgo),
+	daysToGoUnit: i18n(I18nKey.decennialDaysToGo),
+	thresholds,
+}}>
+	const today = new Date();
+	const begin = new Date(startDate);
+	const end = new Date(begin);
+	end.setDate(end.getDate() + 3650);
+	const latest = new Date(latestDateISO);
+	const elapsed = Math.ceil((today - latest) / 86400000);
+	const counter = Math.ceil((today - begin) / 86400000);
+	const daysTogo = Math.max(Math.ceil((end - today) / 86400000), 0);
+	const progress = ((counter / 3650) * 100).toFixed(1);
+	const ACHIEVED = "oklch(0.6 0.2 calc(var(--hue) - 80))";
+	const LATE = "oklch(0.7 0.2 calc(var(--hue) + 135))";
+
+	function formatDate(date) {
+		const y = date.getFullYear();
+		const m = String(date.getMonth() + 1).padStart(2, "0");
+		const d = String(date.getDate()).padStart(2, "0");
+		return `${y}-${m}-${d}`;
+	}
+
+	document.getElementById("start-date").textContent = formatDate(begin);
+	document.getElementById("end-date").textContent = formatDate(end);
+	document.getElementById("progress-percent").textContent = `${progress}%`;
+
+	// 履约事项1：六个月内是否有新文章
+	document.getElementById("promise1-title").style.color =
+		elapsed <= thresholds.promiseMonths * 30 ? ACHIEVED : LATE;
+	document.getElementById("promise1-text").textContent =
+		`${elapsed} ${dayAgoUnit}: ${latestTitle}`;
+
+	// 成就上色
+	document.getElementById("ach1-title").style.color =
+		originalPosts >= thresholds.posts ? ACHIEVED : "";
+	document.getElementById("ach2-title").style.color =
+		words >= thresholds.words1 ? ACHIEVED : "";
+	document.getElementById("ach3-title").style.color =
+		words >= thresholds.words2 ? ACHIEVED : "";
+	document.getElementById("ach4-text").textContent = `${counter} ${dayUnit}`;
+	document.getElementById("ach4-title").style.color = counter >= thresholds.days1 ? ACHIEVED : "";
+	document.getElementById("ach5-text").textContent = `${counter} ${dayUnit}`;
+	document.getElementById("ach5-title").style.color = counter >= thresholds.days2 ? ACHIEVED : "";
+	document.getElementById("ach6-text").textContent = `${daysTogo} ${daysToGoUnit}`;
+	document.getElementById("ach6-title").style.color = daysTogo === 0 ? ACHIEVED : "";
+
+	// 进度条动画
+	setTimeout(() => {
+		document.getElementById("progress-fill").style.width = `${progress}%`;
+	}, 500);
+
+	// 天数滚动动画
+	let current = 0;
+	const counterEl = document.getElementById("days-counter");
+	const increment = Math.ceil(counter / 100);
+	const timer = setInterval(() => {
+		current += increment;
+		if (current >= counter) {
+			current = counter;
+			clearInterval(timer);
+		}
+		counterEl.textContent = current;
+	}, 20);
+</script>
