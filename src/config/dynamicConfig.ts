@@ -46,4 +46,18 @@ export const dynamicConfig: DynamicConfig = {
 		// 开启后，说说正文里不会出现 "#项目" 这类标签文本；关闭则原样保留
 		hideTagsInContent: true,
 	},
+
+	// ========== 点赞配置 ==========
+	// 使用自部署 star-vote（https://github.com/kmoretti/star-vote）实现动态点赞
+	// 注意：实例的 HOSTS 环境变量需包含博客生产域名（本地调试需包含 localhost），否则请求返回 403
+	like: {
+		// 是否启用动态点赞
+		enable: true,
+
+		// star-vote 实例地址
+		apiUrl: "https://vote.081531.xyz",
+
+		// 投票 id 前缀，最终投票 id 为 "<idPrefix>:<动态 id>"
+		idPrefix: "dynamic",
+	},
 };
