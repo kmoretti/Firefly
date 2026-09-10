@@ -6,6 +6,7 @@ import { fetchWithDedup } from "@/utils/fetch-dedup";
 import { url } from "@/utils/url-utils";
 import { registerDynamicGallery } from "./dynamic-gallery";
 import { registerDynamicInlineComments } from "./dynamic-inline-comments";
+import { registerDynamicLike } from "./dynamic-like";
 
 type DynamicImage = {
 	alt: string;
@@ -272,6 +273,16 @@ function createItem(entry: DynamicData) {
 			comments.remove();
 		}
 	}
+
+	// 点赞：写入本条动态的投票 id（"<前缀>:<动态 id>"）
+	const like = root.querySelector<HTMLElement>("dynamic-like");
+	if (like) {
+		like.dataset.voteId = `${like.dataset.idPrefix || "dynamic"}:${entry.id}`;
+	}
+
+	// 点赞与评论都不可用时移除空操作条，避免留下孤立的分隔线
+	const actions = root.querySelector<HTMLElement>(".dynamic-actions");
+	if (actions && !actions.firstElementChild) actions.remove();
 	return fragment;
 }
 
@@ -308,6 +319,7 @@ $effect(() => {
 onMount(() => {
 	registerDynamicGallery();
 	registerDynamicInlineComments();
+	registerDynamicLike();
 	const page = list.closest(".dynamic-page");
 	template =
 		page?.querySelector<HTMLTemplateElement>("[data-dynamic-item-template]") ??
