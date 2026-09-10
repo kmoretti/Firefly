@@ -12,6 +12,8 @@ export type DynamicConfig = {
 	apiUrl?: string;
 	// Memos 配置
 	memos?: DynamicMemocsConfig;
+	// 点赞配置（star-vote）；未配置或 enable 为 false 时不渲染点赞按钮
+	like?: DynamicLikeConfig;
 };
 
 export type DynamicMemocsConfig = {
@@ -25,4 +27,13 @@ export type DynamicMemocsConfig = {
 	tags?: string[];
 	/** 是否在渲染前从内容中移除 "#标签" 标记文本（标签仍由独立 chips 展示），默认开启 */
 	hideTagsInContent?: boolean;
+};
+
+export type DynamicLikeConfig = {
+	/** 是否启用动态点赞 */
+	enable: boolean;
+	/** 自部署 star-vote 实例地址，如 "https://vote.example.com" */
+	apiUrl: string;
+	/** 投票 id 前缀，最终投票 id 为 "<idPrefix>:<动态 id>"，默认 "dynamic" */
+	idPrefix?: string;
 };
