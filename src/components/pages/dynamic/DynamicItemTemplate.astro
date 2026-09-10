@@ -15,6 +15,10 @@ const profileLabel = i18n(I18nKey.dynamicProfile).replace(
 	profileConfig.name,
 );
 const profileUrl = url(dynamicConfig.profileUrl || "/about/");
+
+const likeConfig = dynamicConfig.like;
+const likeApiUrl = likeConfig?.enable ? likeConfig.apiUrl : "";
+const likeIdPrefix = likeConfig?.idPrefix || "dynamic";
 ---
 
 <template data-dynamic-item-template>
@@ -57,7 +61,36 @@ const profileUrl = url(dynamicConfig.profileUrl || "/about/");
 			<div class="dynamic-content custom-md" data-dynamic-content></div>
 			<DynamicGallery sourceId="dynamic-template-content" />
 			<div class="dynamic-tags" data-dynamic-tags hidden></div>
-			<DynamicInlineComments src="" />
+			<div class="dynamic-actions">
+				{likeApiUrl && (
+					<dynamic-like
+						class="dynamic-like"
+						data-api-url={likeApiUrl}
+						data-id-prefix={likeIdPrefix}
+						data-vote-id=""
+					>
+						<button
+							type="button"
+							class="dynamic-like-button"
+							data-like-button
+							disabled
+							aria-pressed="false"
+							aria-label={i18n(I18nKey.dynamicLike)}
+						>
+							<Icon
+								name="material-symbols:favorite-outline-rounded"
+								class="dynamic-like-icon-outline"
+							/>
+							<Icon
+								name="material-symbols:favorite-rounded"
+								class="dynamic-like-icon-filled"
+							/>
+							<span data-like-count>0</span>
+						</button>
+					</dynamic-like>
+				)}
+				<DynamicInlineComments src="" />
+			</div>
 		</article>
 	</dynamic-entry>
 </template>
