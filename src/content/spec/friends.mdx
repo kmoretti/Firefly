@@ -8,11 +8,12 @@ description: "与优秀的朋友们一起成长"
 {/* ========== 站点信息 ========= */}
 
 export const site = {
-  name: "夏夜流萤",
-  desc: "飞萤之火自无梦的长夜亮起，绽放在终竟的明天。",
-  url: "https://blog.cuteleaf.cn",
-  avatar: "https://weavatar.com/avatar/d252655d40d6874417a720bad0a6c5f77f8f6a1fd2f882f8f338402dc37e4190?s=640",
-  email: "xiaye@msn.com",
+  name: "喵洛阁",
+  desc: "每一段旅行，都有终点。",
+  url: "https://b.kemeow.top",
+  avatar: "https://q2.qlogo.cn/headimg_dl?dst_uin=3149261770&spec=0",
+  image: "https://openlist.081531.xyz/d/yidong/imgbed/blog-screenshot.webp",
+  rss: "https://b.kemeow.top/rss.xml"
 };
 
 import FriendlinkSubmission from "@components/pages/FriendlinkSubmission.svelte";
@@ -49,6 +50,8 @@ import FriendlinkSubmission from "@components/pages/FriendlinkSubmission.svelte"
             { label: "站点描述", value: site.desc },
             { label: "站点链接", value: site.url },
             { label: "头像链接", value: site.avatar },
+            { label: "站点截图", value: site.image },
+            { label: "RSS 地址", value: site.rss },
           ].map((item) => (
             <div class="flex items-center justify-between gap-2 rounded-lg bg-black/5 dark:bg-white/5 px-3 py-2">
               <div class="min-w-0">
@@ -96,15 +99,8 @@ import FriendlinkSubmission from "@components/pages/FriendlinkSubmission.svelte"
               <div class="w-0.5 flex-1 bg-(--line-divider) my-1.5"></div>
             </div>
             <div class="pb-4">
-              <p class="font-semibold text-sm mb-1">评论区留言/发送申请邮件至：<code class="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[0.7rem]">{site.email}</code></p>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">申请模板，把内容复制修改后到评论区或邮件中发送</p>
-              <div class="relative rounded-lg bg-black/5 dark:bg-white/5 p-4 pr-10 text-[0.7rem] leading-relaxed overflow-x-auto whitespace-pre">
-                <button onclick="navigator.clipboard.writeText('站点名称：您的站点名称\n站点描述：您的站点描述\n站点链接：您的站点链接\n头像链接：您的站点头像');this.querySelectorAll('svg')[0].classList.add('hidden');this.querySelectorAll('svg')[1].classList.remove('hidden');setTimeout(()=>{this.querySelectorAll('svg')[0].classList.remove('hidden');this.querySelectorAll('svg')[1].classList.add('hidden')},1500)" class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md bg-black/10 dark:bg-white/10 text-(--btn-content) hover:opacity-80 transition-opacity cursor-pointer">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                  <svg class="w-3.5 h-3.5 hidden text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                </button>
-                {`站点名称：您的站点名称\n站点描述：您的站点描述\n站点链接：您的站点链接\n头像链接：您的站点头像`}
-              </div>
+              <p class="font-semibold text-sm mb-1">通过下方申请表单提交</p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">在下方表单中填写站点名称、地址、描述、头像、友链页面、站点截图与 RSS 地址并提交，无需邮件或评论区留言</p>
             </div>
           </div>
 
@@ -115,7 +111,7 @@ import FriendlinkSubmission from "@components/pages/FriendlinkSubmission.svelte"
             </div>
             <div>
               <p class="font-semibold text-sm mb-1">等待审核</p>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">确认信息无误后会尽快添加您的友链</p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">提交后可在下方申请状态列表实时查询进度，确认信息无误后会尽快添加您的友链</p>
             </div>
           </div>
         </div>
