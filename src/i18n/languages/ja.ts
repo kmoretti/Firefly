@@ -43,6 +43,7 @@ export const ja: Translation = {
 	[Key.dynamicAllYears]: "すべての年",
 	[Key.dynamicLoadMore]: "さらに読み込む",
 	[Key.dynamicBackToList]: "投稿一覧へ戻る",
+	[Key.dynamicLike]: "いいね",
 	[Key.dynamicProfile]: "{name}のプロフィールを見る",
 	[Key.dynamicPermalink]: "この投稿への固定リンク",
 	[Key.dynamicCollapseGallery]: "閉じる",

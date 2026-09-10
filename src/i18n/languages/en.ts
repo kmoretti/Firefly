@@ -43,6 +43,7 @@ export const en: Translation = {
 	[Key.dynamicAllYears]: "All years",
 	[Key.dynamicLoadMore]: "Load more",
 	[Key.dynamicBackToList]: "Back to moments",
+	[Key.dynamicLike]: "Like",
 	[Key.dynamicProfile]: "View {name}'s profile",
 	[Key.dynamicPermalink]: "Permalink to this moment",
 	[Key.dynamicCollapseGallery]: "Collapse",

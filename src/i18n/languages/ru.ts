@@ -43,6 +43,7 @@ export const ru: Translation = {
 	[Key.dynamicAllYears]: "Все годы",
 	[Key.dynamicLoadMore]: "Загрузить ещё",
 	[Key.dynamicBackToList]: "Назад к публикациям",
+	[Key.dynamicLike]: "Нравится",
 	[Key.dynamicProfile]: "Открыть профиль {name}",
 	[Key.dynamicPermalink]: "Постоянная ссылка на публикацию",
 	[Key.dynamicCollapseGallery]: "Свернуть",

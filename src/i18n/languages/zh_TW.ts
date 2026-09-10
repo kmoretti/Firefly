@@ -43,6 +43,7 @@ export const zh_TW: Translation = {
 	[Key.dynamicAllYears]: "全部年份",
 	[Key.dynamicLoadMore]: "載入更多",
 	[Key.dynamicBackToList]: "返回動態列表",
+	[Key.dynamicLike]: "點讚",
 	[Key.dynamicProfile]: "查看 {name} 的資料",
 	[Key.dynamicPermalink]: "此動態的固定連結",
 	[Key.dynamicCollapseGallery]: "收起",
