@@ -633,11 +633,18 @@ dynamic-feed {
 	color: var(--card-bg);
 }
 
-.dynamic-inline-comments {
-	display: block;
+.dynamic-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
 	margin: 0.75rem 0 0 3.75rem;
 	border-top: 1px solid color-mix(in srgb, var(--content-meta) 16%, transparent);
 	padding-top: 0.35rem;
+}
+
+.dynamic-inline-comments {
+	display: block;
 }
 
 .dynamic-comment-toggle {
@@ -661,6 +668,46 @@ dynamic-feed {
 
 .dynamic-comment-chevron {
 	transition: transform 180ms ease;
+}
+
+.dynamic-like-button {
+	display: inline-flex;
+	min-height: 2.25rem;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0 0.25rem;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--content-meta);
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: color 150ms ease;
+}
+
+.dynamic-like-button:hover:not([data-busy="true"]),
+.dynamic-like-button:focus-visible {
+	color: var(--primary);
+}
+
+.dynamic-like-button:disabled {
+	cursor: default;
+}
+
+.dynamic-like-icon-filled {
+	display: none;
+}
+
+.dynamic-like[data-liked="true"] .dynamic-like-button {
+	color: var(--primary);
+}
+
+.dynamic-like[data-liked="true"] .dynamic-like-icon-outline {
+	display: none;
+}
+
+.dynamic-like[data-liked="true"] .dynamic-like-icon-filled {
+	display: inline;
 }
 
 .dynamic-inline-comments[data-expanded="true"] .dynamic-comment-chevron {
@@ -816,7 +863,7 @@ body.wallpaper-transparent .dynamic-year-select select option {
 	.dynamic-content,
 	.dynamic-gallery,
 	.dynamic-tags,
-	.dynamic-inline-comments {
+	.dynamic-actions {
 		margin-left: 0;
 	}
 

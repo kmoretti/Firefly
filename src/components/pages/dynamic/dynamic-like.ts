@@ -33,7 +33,8 @@ export function registerDynamicLike(): void {
 		}
 
 		private async init() {
-			const button = this.querySelector<HTMLButtonElement>("[data-like-button]");
+			const button =
+				this.querySelector<HTMLButtonElement>("[data-like-button]");
 			const apiUrl = this.dataset.apiUrl;
 			const voteId = this.dataset.voteId;
 			if (!button || !apiUrl || !voteId) return;
@@ -62,7 +63,8 @@ export function registerDynamicLike(): void {
 		}
 
 		private async vote(apiUrl: string, voteId: string) {
-			const button = this.querySelector<HTMLButtonElement>("[data-like-button]");
+			const button =
+				this.querySelector<HTMLButtonElement>("[data-like-button]");
 			if (!button || button.dataset.busy === "true") return;
 			const likedIds = getLikedIds();
 			if (likedIds.has(voteId)) return;
