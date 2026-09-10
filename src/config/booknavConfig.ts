@@ -76,8 +76,15 @@ export const booknavConfig: BooknavGroup[] = [
 		items: [
 			{
 				title: "Firefly",
-				url: "https://github.com/CuteLeaf/Firefly",
-				desc: "清晰美观的 Astro 个人博客主题模板",
+				url: "https://github.com/kmoretti/Firefly",
+				desc: "博客自用魔改仓库",
+				icon: "/favicon/firefly-32.png",
+				weight: 10,
+			},
+			{
+				title: "Home",
+				url: "https://github.com/kmoretti/kemiao",
+				desc: "主页自用魔改仓库",
 				icon: "/favicon/firefly-32.png",
 				weight: 10,
 			},
@@ -131,26 +138,26 @@ export const booknavConfig: BooknavGroup[] = [
 			},
 		],
 	},
-	{
-		id: "resources",
-		name: "资源",
-		icon: "material-symbols:auto-stories-outline-rounded",
-		desc: "文档、教程与阅读",
-		weight: 70,
-		items: [
-			{
-				title: "Firefly Docs",
-				url: "https://docs-b.kemeow.top",
-				desc: "Firefly 主题模板文档",
-				icon: "https://docs-b.kemeow.top/logo.png",
-				weight: 10,
-			},
-			{
-				title: "夏夜流萤",
-				url: "https://blog.cuteleaf.cn",
-				desc: "飞萤之火自无梦的长夜亮起",
-				weight: 9,
-			},
-		],
-	},
+	// {
+	// 	id: "resources",
+	// 	name: "资源",
+	// 	icon: "material-symbols:auto-stories-outline-rounded",
+	// 	desc: "文档、教程与阅读",
+	// 	weight: 70,
+	// 	items: [
+	// 		{
+	// 			title: "Firefly Docs",
+	// 			url: "https://docs-b.kemeow.top",
+	// 			desc: "Firefly 主题模板文档",
+	// 			icon: "https://docs-b.kemeow.top/logo.png",
+	// 			weight: 10,
+	// 		},
+	// 		{
+	// 			title: "夏夜流萤",
+	// 			url: "https://blog.cuteleaf.cn",
+	// 			desc: "飞萤之火自无梦的长夜亮起",
+	// 			weight: 9,
+	// 		},
+	// 	],
+	// },
 ];
