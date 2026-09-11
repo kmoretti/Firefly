@@ -1,0 +1,112 @@
+---
+title: 给博客动态页接 Ech0：一条代理链路和几个绕不开的坑
+published: 2026-09-11
+description: 动态页的数据源从 Memos 换成自部署的 Ech0。这篇记录整条数据链路：为什么走服务端同源代理而不是前端直连、echo/query 的分页怎么收尾、Markdown 和扩展卡片分别在哪一层渲染，以及实际踩到的几个坑——服务端 pageSize 钳位、时间戳是秒不是毫秒、匿名请求拿不到私密说说、推文嵌入被墙的降级方案。
+tags: [Astro, Ech0, 动态页, API, 折腾]
+category: 技术
+slug: ech0-dynamic-source
+---
+
+## 起因
+
+博客的动态页之前一直吃 Memos 的数据，客户端通过 `/api/memos.json` 这个同源代理拿说说，体验没什么问题。但我的说说主力早就迁到了自部署的 [Ech0](https://github.com/lin-snow/Ech0) 上——一个 Go 写的单文件轻微博程序，带标签、扩展卡片（音乐、推文、视频这些）和原生点赞。两边维护同一批内容终究别扭，于是决定让动态页直接吃 Ech0 的数据。
+
+目标其实很明确：
+
+1. 动态页、侧边栏的「最新动态」都换成 Ech0 数据源
+2. 正文里的 Markdown 和内嵌 HTML 都要正常渲染
+3. 音乐、推文这类扩展卡片要能渲染出来，不能退化成一行链接
+4. 标签点击筛选、搜索、年份筛选这些现有交互一个都不能少
+5. 点赞直接用 Ech0 原生的，计数和 Ech0 站内互通
+
+## 为什么走服务端代理
+
+Ech0 的 CORS 是开放的，实测它会回显任意 Origin，理论上前端直接 fetch `m.081531.xyz` 就能用。但我还是选择了和 Memos 一样的方案：写一个服务端适配器，数据经 `/api/ech0.json` 同源代理吐给前端。原因有三个。
+
+第一，动态页的消费端契约是 `DynamicEntry`，里面有一个**已经渲染好的 `html` 字段**。Markdown 转 HTML 这一步目前依赖 marked，跑在服务端。如果前端直连，要么把渲染逻辑搬进浏览器白白增加打包体积，要么每个消费组件各渲染一遍——两条路都比多写一个适配器难看。
+
+第二，代理端点可以挂缓存头。我给的是 `Cache-Control: public, max-age=60, stale-while-revalidate=300`，热页面上新内容最多延迟一分钟，冷门时段先吐旧缓存、后台刷新。关键是这个端点是**运行时按需执行**的，不是构建时产物——我在 Ech0 发条说说，博客不用重新构建，下次请求就是新的。
+
+第三，顺便把实例地址藏在了服务端，前端只见 `/api/ech0.json`，请求数也被代理端的去重逻辑收拢了。
+
+## 数据怎么拿
+
+Ech0 对外的查询入口是 `POST /api/echo/query`，body 长这样：
+
+```json
+{
+	"page": 1,
+	"pageSize": 100,
+	"search": "",
+	"tagIds": [],
+	"sortBy": "created_at",
+	"sortOrder": "desc",
+	"dateFrom": 0,
+	"dateTo": 0
+}
+```
+
+返回 `data.items` 和 `data.total`。适配器做的事就是循环翻页拉全量，然后逐条转成动态系统的统一格式：
+
+```ts
+// fetchEchoPage 带三次重试，超时错误不重试——
+// 上游响应慢的时候重试只会成倍拖长代理端点的等待时间
+const { items, total: queryTotal } = await fetchEchoPage(apiUrl, {
+	page,
+	pageSize,
+	search: "",
+	tagIds: [],
+	sortBy: "created_at",
+	sortOrder: "desc",
+	dateFrom: 0,
+	dateTo: 0,
+});
+allEchos = allEchos.concat(items);
+total = queryTotal || allEchos.length;
+if (allEchos.length >= total || items.length < pageSize) break;
+```
+
+单条 Echo 转换的核心就是字段映射：`content` 丢给 marked 出 `html`，`created_at` 乘 1000 变毫秒，`tags` 从对象数组抽成名字数组，`fav_count` 透传成 `likes`，`extension` 原样透传。图片单独提出来放进 `images` 数组，交给现有的画廊组件。
+
+Markdown 渲染用的 marked 实例和 Memos 适配器保持同一套配置：GFM 开、单换行转 `<br>`、链接强制新标签页打开。有个细节是**图片渲染器置空**——Markdown 里的图片语法不直接输出 `<img>`，而是用 lexer 把图片 token 摘出来塞进 `images` 数组，最后由画廊统一渲染，避免正文和画廊出现两张一样的图。
+
+## 扩展卡片：透传，不要在服务端拼 HTML
+
+Ech0 的说说可以挂扩展：`extension` 字段带着 `type` 和 `payload`。六种类型的 payload 我逐个确认过：
+
+| type | payload |
+|------|---------|
+| MUSIC | `{ url }`（网易云/QQ 音乐链接） |
+| VIDEO | `{ videoId }`（B 站 BV 号或 YouTube id） |
+| GITHUBPROJ | `{ repoUrl }` |
+| WEBSITE | `{ site, title }` |
+| LOCATION | `{ latitude, longitude, placeholder }` |
+| TWEET | `{ url, username }` |
+
+第一反应是在适配器里直接把卡片拼成 HTML 塞进正文，零前端代码。但很快发现走不通：推文卡片靠 `platform.twitter.com/widgets.js` 渲染，脚本必须客户端加载；音乐卡片要调 Meting API 解析出真实音频地址。既然音乐和推文注定要写客户端代码，干脆六种卡片全部结构化透传，由一个 `<dynamic-extension>` 自定义元素在前端按 type 分发渲染。适配器保持干净，卡片样式走博客自己的主题变量，明暗模式白送。
+
+其中 LOCATION 是个例外：它不渲染卡片，而是映射到卡片 meta 行的位置字段，用博客现成的位置样式展示。同一个信息渲染两遍没有意义。
+
+音乐卡片的实现是中庸路线：先用和 Ech0 同源的规则解析出 `server/type/id`（网易云和 QQ 音乐两套正则），再去 Meting API 换封面、歌名、歌手和音频直链，原生 `<audio>` 播放。Ech0 站内那个带歌词滚动的完整播放器在说说卡片场景里太重了，而且博客本身已有全局音乐播放器，没必要重复建设。Meting 全挂或者音频加载失败，就降级成一个跳转链接卡。
+
+## 踩到的坑
+
+**服务端把 pageSize 钳到 100。** 我一开始传 500 想一页拉完，响应看起来也正常，实际只回了 100 条。查源码才发现 `QueryEchos` 里有硬钳位：`if queryDto.PageSize > 100 { queryDto.PageSize = 100 }`。所以翻页循环必须老老实实按 100 一页走，终止条件用 `total` 和「短页」双重判断。
+
+**`created_at` 是 Unix 秒，不是毫秒。** 直接 `new Date(echo.created_at)` 会得到 1970 年，年份筛选直接全军覆没。乘 1000 才对。
+
+**匿名请求拿不到私密说说。** `echo/query` 是 optional auth 的路由，不带 token 时服务端只返回公开内容。这对博客来说恰好是对的——但联调时如果发现某条说说在博客上不出现，先去 Ech0 检查它是不是设了私密，别急着查代码。
+
+**推文嵌入必须准备降级。** `platform.twitter.com` 在国内网络基本是玄学，能加载出来体验最好，加载不出来不能留白。我的做法是卡片渲染时才懒加载 widgets.js，起一个 6 秒的定时器，到点还没出现 iframe 就把整个卡片替换成 `@username` 的链接卡。Ech0 前端用的也是同一套思路，阈值直接抄了。
+
+**内嵌 HTML 是原样输出的。** marked 对正文里的 HTML 不做转义直接透传，Ech0 的内容里也确实会有 HTML 片段。这里没有做 sanitize——数据源是我自己的实例、我自己发的内容，信任边界是清晰的。但如果要做一个多人共用的方案，这一层必须补上，不能照抄。
+
+**原生点赞有限流。** `PUT /api/echo/like/{id}` 是公开接口，但服务端做了按 id 的幂等限流（每小时窗口内每个说说最多两次）。正常点一下完全够用，连续狂点会被拒——前端本来就有 localStorage 防重复，两层加起来正好。要说明的是 localStorage 只是软限制，清了浏览器数据就能再点，这类无身份方案的天花板就这样，够用。
+
+**数据源切换的优先级要定死。** 配置里同时存在 `ech0.enable` 和 `memos.enable` 两个开关，判定链是 `ech0 > memos > apiUrl`。不搞混排——两个来源的说说排序、锚点、点赞语义都不一样，混在一起是自找麻烦。想换数据源，改一个布尔值就行。
+
+## 收尾
+
+现在动态页的数据链路是：Ech0 实例 → 服务端适配器（marked 渲染 + 字段映射）→ `/api/ech0.json`（60 秒缓存）→ 前端卡片流。扩展卡片结构化透传给自定义元素渲染，点赞双轨制——Ech0 的说说用原生计数，本地和其他数据源继续走 star-vote，按钮长一个样。
+
+整套东西都是配置驱动的，`dynamicConfig.ech0.enable` 一个开关决定生死，关掉就自动回落 Memos，不残留任何请求。代码在 [kmoretti/Firefly](https://github.com/kmoretti/Firefly) 的 `src/utils/ech0-adapter.ts` 和 `src/components/pages/dynamic/dynamic-extensions.ts`，想抄作业的自取。
