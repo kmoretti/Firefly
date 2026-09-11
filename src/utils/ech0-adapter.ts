@@ -107,9 +107,10 @@ function extractImages(echo: Echo, apiUrl: string): DynamicImage[] {
  * - LOCATION 不走卡片，映射到卡片的位置元信息行
  * - 其余类型结构化透传给前端渲染器
  */
-function resolveExtension(
-	extension: EchoExtension | null | undefined,
-): { extension?: { type: string; payload: Record<string, unknown> }; location: string } {
+function resolveExtension(extension: EchoExtension | null | undefined): {
+	extension?: { type: string; payload: Record<string, unknown> };
+	location: string;
+} {
 	const ext = extension;
 	if (!ext?.type || !ext.payload) return { location: "" };
 
@@ -131,12 +132,15 @@ async function fetchEchoPage(
 	const maxAttempts = 3;
 	for (let attempt = 1; ; attempt++) {
 		try {
-			const response = await fetch(`${apiUrl.replace(/\/+$/, "")}/api/echo/query`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(body),
-				signal: AbortSignal.timeout(15_000),
-			});
+			const response = await fetch(
+				`${apiUrl.replace(/\/+$/, "")}/api/echo/query`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(body),
+					signal: AbortSignal.timeout(15_000),
+				},
+			);
 			if (!response.ok) {
 				const errorText = await response.text().catch(() => "");
 				console.error(`[Ech0 API] ${response.status}: ${errorText}`);
@@ -171,7 +175,7 @@ export async function fetchEch0(
 	const maxPages = options?.maxPages || 10;
 
 	let allEchos: Echo[] = [];
-	let total = Infinity;
+	let total = Number.POSITIVE_INFINITY;
 	for (let page = 1; page <= maxPages; page++) {
 		const { items, total: queryTotal } = await fetchEchoPage(apiUrl, {
 			page,
