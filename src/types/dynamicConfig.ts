@@ -14,6 +14,8 @@ export type DynamicConfig = {
 	memos?: DynamicMemocsConfig;
 	// 点赞配置（star-vote）；未配置或 enable 为 false 时不渲染点赞按钮
 	like?: DynamicLikeConfig;
+	// Ech0 数据源配置；enable 为 true 时优先于 memos 与 apiUrl 生效
+	ech0?: DynamicEch0Config;
 };
 
 export type DynamicMemocsConfig = {
@@ -36,4 +38,15 @@ export type DynamicLikeConfig = {
 	apiUrl: string;
 	/** 投票 id 前缀，最终投票 id 为 "<idPrefix>:<动态 id>"，默认 "dynamic" */
 	idPrefix?: string;
+};
+
+export type DynamicEch0Config = {
+	/** 是否启用 Ech0 数据源（优先级高于 memos 与 apiUrl） */
+	enable: boolean;
+	/** 自部署 Ech0 实例地址，如 "https://m.081531.xyz" */
+	apiUrl: string;
+	/** 单页拉取条数，服务端上限 100，默认 100 */
+	pageSize?: number;
+	/** 最大翻页数，默认 10 */
+	maxPages?: number;
 };

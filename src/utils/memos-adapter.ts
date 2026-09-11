@@ -51,6 +51,10 @@ export interface DynamicEntry {
 	location?: string;
 	/** 说说携带的标签，供前端卡片展示与点击筛选 */
 	tags?: string[];
+	/** Ech0 扩展卡片（MUSIC/VIDEO/GITHUBPROJ/WEBSITE/TWEET），结构化透传给前端渲染 */
+	extension?: { type: string; payload: Record<string, unknown> };
+	/** 原生点赞数（Ech0 fav_count）；存在时点赞按钮走原生 provider */
+	likes?: number;
 }
 
 /**
