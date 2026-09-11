@@ -60,4 +60,21 @@ export const dynamicConfig: DynamicConfig = {
 		// 投票 id 前缀，最终投票 id 为 "<idPrefix>:<动态 id>"
 		idPrefix: "dynamic",
 	},
+
+	// ========== Ech0 数据源配置 ==========
+	// 启用后动态页通过同源代理 /api/ech0.json 实时获取 Ech0 说说
+	// 优先级：ech0.enable > memos.enable > apiUrl（本地/第三方 json）
+	ech0: {
+		// 是否启用 Ech0 数据源（启用后覆盖 Memos 数据源）
+		enable: true,
+
+		// 自部署 Ech0 实例地址
+		apiUrl: "https://m.081531.xyz",
+
+		// 单页拉取条数（服务端上限 100）
+		pageSize: 100,
+
+		// 最大翻页数
+		maxPages: 10,
+	},
 };
