@@ -26,6 +26,9 @@ const dataUrl = dynamicConfig.apiUrl?.startsWith("http")
 	? dynamicConfig.apiUrl
 	: url(dynamicConfig.apiUrl || "/api/dynamic.json");
 const memos = dynamicConfig.memos;
+const ech0Config = dynamicConfig.ech0;
+const ech0 =
+	ech0Config?.enable && ech0Config.apiUrl ? { enable: true } : undefined;
 ---
 
 <MainGridLayout title={title} description={description}>
@@ -79,6 +82,8 @@ const memos = dynamicConfig.memos;
 				allYearsText={i18n(I18nKey.dynamicAllYears)}
 				timezone={siteConfig.timezone || "UTC"}
 				{memos}
+				ech0={ech0}
+				ech0ApiUrl={ech0Config?.apiUrl}
 			/>
 
 			<DynamicItemTemplate />

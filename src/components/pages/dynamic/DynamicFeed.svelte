@@ -7,6 +7,7 @@ import { url } from "@/utils/url-utils";
 import { registerDynamicGallery } from "./dynamic-gallery";
 import { registerDynamicInlineComments } from "./dynamic-inline-comments";
 import { registerDynamicLike } from "./dynamic-like";
+import { registerDynamicExtensions } from "./dynamic-extensions";
 
 type DynamicImage = {
 	alt: string;
@@ -23,12 +24,18 @@ type DynamicData = {
 	pinned?: boolean;
 	location?: string;
 	tags?: string[];
+	extension?: { type: string; payload: Record<string, unknown> };
+	likes?: number;
 };
 
 interface MemosConfig {
 	enable: boolean;
 	apiUrl: string;
 	parent?: string;
+}
+
+interface Ech0Config {
+	enable: boolean;
 }
 
 interface Props {
@@ -41,6 +48,8 @@ interface Props {
 	allYearsText: string;
 	timezone: string;
 	memos?: MemosConfig;
+	ech0?: Ech0Config;
+	ech0ApiUrl?: string;
 }
 
 const {
@@ -53,6 +62,8 @@ const {
 	allYearsText,
 	timezone,
 	memos,
+	ech0,
+	ech0ApiUrl,
 }: Props = $props();
 
 let entries = $state<DynamicData[]>([]);
@@ -175,8 +186,8 @@ function createItem(entry: DynamicData) {
 	if (time) {
 		const date = new Date(entry.published);
 		time.dateTime = date.toISOString();
-		// 第三方 API 和 Memos 使用浏览器本地时区，不做额外时区转换
-		if (source.startsWith("http") || memos?.enable) {
+		// 第三方 API、Memos 和 Ech0 代理使用浏览器本地时区，不做额外时区转换
+		if (source.startsWith("http") || memos?.enable || ech0?.enable) {
 			time.textContent = date.toLocaleDateString("zh-CN", {
 				year: "numeric",
 				month: "2-digit",
@@ -274,10 +285,32 @@ function createItem(entry: DynamicData) {
 		}
 	}
 
-	// 点赞：写入本条动态的投票 id（"<前缀>:<动态 id>"）
+	// Ech0 扩展卡片：写入类型与 payload，由 <dynamic-extension> 渲染
+	const extEl = root.querySelector<HTMLElement>("dynamic-extension");
+	if (extEl) {
+		const ext = entry.extension;
+		if (ext) {
+			extEl.dataset.type = ext.type;
+			extEl.dataset.payload = JSON.stringify(ext.payload);
+			extEl.removeAttribute("hidden");
+		} else {
+			extEl.remove();
+		}
+	}
+
+	// 点赞 provider：ech0 条目走原生点赞，其余走 star-vote，都没有则移除按钮
 	const like = root.querySelector<HTMLElement>("dynamic-like");
 	if (like) {
-		like.dataset.voteId = `${like.dataset.idPrefix || "dynamic"}:${entry.id}`;
+		if (entry.likes != null && ech0ApiUrl) {
+			like.dataset.voteId = `ech0:${entry.id}`;
+			like.dataset.provider = "ech0";
+			like.dataset.likeEndpoint = `${ech0ApiUrl.replace(/\/+$/, "")}/api/echo/like/${entry.id}`;
+			like.dataset.likeCount = String(entry.likes);
+		} else if (like.dataset.voteEnabled === "true") {
+			like.dataset.voteId = `${like.dataset.idPrefix || "dynamic"}:${entry.id}`;
+		} else {
+			like.remove();
+		}
 	}
 
 	// 点赞与评论都不可用时移除空操作条，避免留下孤立的分隔线
@@ -320,6 +353,7 @@ onMount(() => {
 	registerDynamicGallery();
 	registerDynamicInlineComments();
 	registerDynamicLike();
+	registerDynamicExtensions();
 	const page = list.closest(".dynamic-page");
 	template =
 		page?.querySelector<HTMLTemplateElement>("[data-dynamic-item-template]") ??
@@ -335,7 +369,11 @@ onMount(() => {
 
 	const load = async () => {
 		try {
-			if (memos?.enable) {
+			if (ech0?.enable) {
+				const data = (await fetchWithDedup(url("/api/ech0.json"))) as unknown;
+				if (!Array.isArray(data)) throw new Error("Invalid ech0 payload");
+				entries = data;
+			} else if (memos?.enable) {
 				const data = (await fetchWithDedup(url("/api/memos.json"))) as unknown;
 				if (!Array.isArray(data)) throw new Error("Invalid memos payload");
 				entries = data;

@@ -19,6 +19,9 @@ const profileUrl = url(dynamicConfig.profileUrl || "/about/");
 const likeConfig = dynamicConfig.like;
 const likeApiUrl = likeConfig?.enable ? likeConfig.apiUrl : "";
 const likeIdPrefix = likeConfig?.idPrefix || "dynamic";
+const ech0Config = dynamicConfig.ech0;
+const ech0Enabled = Boolean(ech0Config?.enable && ech0Config.apiUrl);
+const showLike = likeApiUrl !== "" || ech0Enabled;
 ---
 
 <template data-dynamic-item-template>
@@ -59,14 +62,16 @@ const likeIdPrefix = likeConfig?.idPrefix || "dynamic";
 			</header>
 
 			<div class="dynamic-content custom-md" data-dynamic-content></div>
+			<dynamic-extension class="dynamic-extension" hidden></dynamic-extension>
 			<DynamicGallery sourceId="dynamic-template-content" />
 			<div class="dynamic-tags" data-dynamic-tags hidden></div>
 			<div class="dynamic-actions">
-				{likeApiUrl && (
+				{showLike && (
 					<dynamic-like
 						class="dynamic-like"
 						data-api-url={likeApiUrl}
 						data-id-prefix={likeIdPrefix}
+						data-vote-enabled={likeApiUrl !== "" ? "true" : undefined}
 						data-vote-id=""
 					>
 						<button
