@@ -4,10 +4,10 @@ import ClientPagination from "@/components/common/ClientPagination.svelte";
 import { formatTimezoneOffset } from "@/utils/date-utils";
 import { fetchWithDedup } from "@/utils/fetch-dedup";
 import { url } from "@/utils/url-utils";
+import { registerDynamicExtensions } from "./dynamic-extensions";
 import { registerDynamicGallery } from "./dynamic-gallery";
 import { registerDynamicInlineComments } from "./dynamic-inline-comments";
 import { registerDynamicLike } from "./dynamic-like";
-import { registerDynamicExtensions } from "./dynamic-extensions";
 
 type DynamicImage = {
 	alt: string;

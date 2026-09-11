@@ -19,13 +19,18 @@ interface MemosConfig {
 	enable: boolean;
 }
 
+interface Ech0Config {
+	enable: boolean;
+}
+
 interface Props {
 	apiUrl: string;
 	limit: number;
 	memos?: MemosConfig;
+	ech0?: Ech0Config;
 }
 
-let { apiUrl, limit, memos }: Props = $props();
+let { apiUrl, limit, memos, ech0 }: Props = $props();
 
 let entries: DynamicEntry[] = $state([]);
 let totalCount = $state(0);
@@ -35,7 +40,11 @@ let error = $state(false);
 onMount(async () => {
 	try {
 		const data = (await fetchWithDedup(
-			memos?.enable ? url("/api/memos.json") : apiUrl,
+			ech0?.enable
+				? url("/api/ech0.json")
+				: memos?.enable
+					? url("/api/memos.json")
+					: apiUrl,
 		)) as unknown;
 		if (!Array.isArray(data)) throw new Error("Invalid payload");
 		const list = data as DynamicEntry[];
@@ -63,7 +72,7 @@ function getPlainText(html: string): string {
 }
 
 function formatDate(timestamp: number): string {
-	if (apiUrl.startsWith("http") || memos?.enable) {
+	if (apiUrl.startsWith("http") || memos?.enable || ech0?.enable) {
 		return new Date(timestamp).toLocaleDateString("zh-CN", {
 			year: "numeric",
 			month: "2-digit",

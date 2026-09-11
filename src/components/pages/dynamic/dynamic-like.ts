@@ -101,7 +101,7 @@ export function registerDynamicLike(): void {
 				if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			} catch {
 				likedIds.delete(voteId);
-			persistLikedIds(likedIds);
+				persistLikedIds(likedIds);
 				this.dataset.liked = "false";
 				if (countEl) countEl.textContent = previous;
 			} finally {

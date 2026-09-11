@@ -23,6 +23,7 @@ const apiUrl = dynamicConfig.apiUrl?.startsWith("http")
 	? dynamicConfig.apiUrl
 	: url(dynamicConfig.apiUrl || "/api/dynamic.json");
 const memos = dynamicConfig.memos;
+const ech0 = dynamicConfig.ech0?.enable ? { enable: true } : undefined;
 ---
 
 {
@@ -34,7 +35,7 @@ const memos = dynamicConfig.memos;
 			class={className}
 			style={style}
 		>
-			<DynamicSidebar client:visible apiUrl={apiUrl} limit={limit} {memos} />
+			<DynamicSidebar client:visible apiUrl={apiUrl} limit={limit} {memos} {ech0} />
 			<a
 				class="btn-plain mt-2 flex items-center justify-center gap-1 rounded-lg p-1.5
 					text-sm text-(--primary)"

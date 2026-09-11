@@ -172,7 +172,10 @@ function renderMusicFallback(url: string): HTMLElement {
 	return createCard(i18n(I18nKey.dynamicExtMusic), body, url);
 }
 
-function renderMusic(host: HTMLElement, payload: Record<string, unknown>): void {
+function renderMusic(
+	host: HTMLElement,
+	payload: Record<string, unknown>,
+): void {
 	const url = String(payload.url ?? "");
 	const info = url ? parseMusicURL(url) : null;
 	if (!info) {
@@ -275,9 +278,11 @@ function renderTweetFallback(payload: Record<string, unknown>): HTMLElement {
 	return createCard(i18n(I18nKey.dynamicExtTweet), body, url);
 }
 
-function renderTweet(host: HTMLElement, payload: Record<string, unknown>): void {
+function renderTweet(
+	host: HTMLElement,
+	payload: Record<string, unknown>,
+): void {
 	const url = String(payload.url ?? "");
-	const username = String(payload.username ?? "");
 	const dark = document.documentElement.classList.contains("dark");
 
 	const root = createCard(
