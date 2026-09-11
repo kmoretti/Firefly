@@ -35,9 +35,26 @@ export function registerDynamicLike(): void {
 		private async init() {
 			const button =
 				this.querySelector<HTMLButtonElement>("[data-like-button]");
+			if (!button) return;
+
+			if (this.dataset.provider === "ech0") {
+				// 原生点赞：计数直接来自 Ech0 fav_count，点击 PUT like 接口
+				const endpoint = this.dataset.likeEndpoint || "";
+				const nativeVoteId = this.dataset.voteId || "";
+				if (!endpoint || !nativeVoteId) return;
+				this.dataset.liked = String(getLikedIds().has(nativeVoteId));
+				const count = this.querySelector("[data-like-count]");
+				if (count) count.textContent = this.dataset.likeCount || "0";
+				button.disabled = false;
+				button.addEventListener("click", () =>
+					this.likeNative(endpoint, nativeVoteId),
+				);
+				return;
+			}
+
 			const apiUrl = this.dataset.apiUrl;
 			const voteId = this.dataset.voteId;
-			if (!button || !apiUrl || !voteId) return;
+			if (!apiUrl || !voteId) return;
 
 			this.dataset.liked = String(getLikedIds().has(voteId));
 
@@ -60,6 +77,36 @@ export function registerDynamicLike(): void {
 			button.disabled = false;
 
 			button.addEventListener("click", () => this.vote(apiUrl, voteId));
+		}
+
+		/** 原生点赞（Ech0）：乐观更新 + 失败回滚，与 star-vote 路径共用 localStorage 去重 */
+		private async likeNative(endpoint: string, voteId: string) {
+			const button =
+				this.querySelector<HTMLButtonElement>("[data-like-button]");
+			if (!button || button.dataset.busy === "true") return;
+			const likedIds = getLikedIds();
+			if (likedIds.has(voteId)) return;
+
+			const countEl = this.querySelector("[data-like-count]");
+			const previous = countEl?.textContent ?? "0";
+
+			button.dataset.busy = "true";
+			this.dataset.liked = "true";
+			if (countEl) countEl.textContent = String(Number(previous) + 1);
+			likedIds.add(voteId);
+			persistLikedIds(likedIds);
+
+			try {
+				const response = await fetch(endpoint, { method: "PUT" });
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			} catch {
+				likedIds.delete(voteId);
+			persistLikedIds(likedIds);
+				this.dataset.liked = "false";
+				if (countEl) countEl.textContent = previous;
+			} finally {
+				button.dataset.busy = "false";
+			}
 		}
 
 		private async vote(apiUrl: string, voteId: string) {
